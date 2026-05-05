@@ -1,0 +1,61 @@
+.ai-panel {
+  position: fixed; top: 0; right: 0;
+  width: 360px; height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 700;
+  animation: slideInRight 0.25s ease;
+  box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+}
+.ai-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  background: var(--bg-surface);
+}
+.ai-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.ai-msg { display: flex; }
+.ai-msg.user { justify-content: flex-end; }
+.ai-msg.assistant { justify-content: flex-start; }
+.ai-msg-bubble {
+  max-width: 85%; padding: 10px 14px;
+  border-radius: var(--radius); font-size: 0.87rem;
+}
+.ai-msg.user .ai-msg-bubble {
+  background: var(--primary);
+  color: #fff; border-radius: var(--radius) var(--radius) 2px var(--radius);
+}
+.ai-msg.assistant .ai-msg-bubble {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) var(--radius) 2px;
+}
+.ai-msg.assistant .ai-msg-bubble p { color: var(--text) !important; }
+
+.ai-quick-actions {
+  padding: 8px 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.quick-action-btn {
+  background: var(--bg-surface); border: 1px solid var(--border-light);
+  color: var(--text-secondary); padding: 8px 12px;
+  border-radius: var(--radius); font-size: 0.8rem; cursor: pointer;
+  text-align: left; transition: all var(--transition);
+}
+.quick-action-btn:hover { border-color: var(--primary); color: var(--primary-light); background: rgba(108,99,255,0.08); }
+
+.ai-input-area {
+  padding: 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; align-items: flex-end;
+}
+.ai-input {
+  flex: 1; background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius); padding: 10px 14px;
+  color: var(--text); font-family: var(--font-body);
+  font-size: 0.87rem; resize: none;
+  transition: border-color var(--transition);
+}
+.ai-input:focus { outline: none; border-color: var(--primary); }
