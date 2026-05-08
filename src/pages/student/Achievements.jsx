@@ -14,29 +14,43 @@ export default function Achievements() {
     <div className="page-wrapper animate-fade">
       <div className="page-header">
         <div>
-          <h1 className="page-title">🏆 Achievements & Level</h1>
-          <p className="page-subtitle">Track your learning progress and unlock rewards</p>
+          <h1 className="page-title">🏆 My Achievements</h1>
+          <p className="page-subtitle">Track your learning progress, earn badges, and spend your Apple Points.</p>
+        </div>
+        <div className="apple-points-pill">
+          🍎 1,250 Apple Points
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 28, background: 'linear-gradient(135deg, var(--primary) 0%, #6C63FF 100%)', color: 'white' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Current Level</div>
-            <div style={{ fontSize: '3rem', fontWeight: 900 }}>{stats.level}</div>
-          </div>
-          <div style={{ flex: 1, margin: '0 40px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.9rem' }}>
-              <span>XP: {stats.xp} / {stats.nextXp}</span>
-              <span>{Math.round((stats.xp / stats.nextXp) * 100)}%</span>
+      <div className="grid-2" style={{ marginBottom: 28, alignItems: 'stretch' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #6C63FF 100%)', color: 'white' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '0.9rem', opacity: 0.9 }}>Current Level</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 900 }}>{stats.level}</div>
             </div>
-            <div style={{ height: 12, background: 'rgba(255,255,255,0.2)', borderRadius: 6, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${(stats.xp / stats.nextXp) * 100}%`, background: 'white' }} />
+            <div style={{ flex: 1, margin: '0 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: '0.8rem' }}>
+                <span>XP: {stats.xp} / {stats.nextXp}</span>
+                <span>{Math.round((stats.xp / stats.nextXp) * 100)}%</span>
+              </div>
+              <div style={{ height: 10, background: 'rgba(255,255,255,0.2)', borderRadius: 5, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${(stats.xp / stats.nextXp) * 100}%`, background: 'white' }} />
+              </div>
             </div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1.5rem' }}>🌟</div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>Master</div>
+        </div>
+
+        <div className="card-glass" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h3 style={{ margin: 0 }}>🛒 Reward Shop</h3>
+              <p style={{ fontSize: '0.75rem', opacity: 0.7, margin: '4px 0 0' }}>Spend your Apple Points!</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-primary btn-sm">🎨 Avatar (200)</button>
+              <button className="btn btn-primary btn-sm">🎮 Game Key (50)</button>
+            </div>
           </div>
         </div>
       </div>

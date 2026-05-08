@@ -450,6 +450,31 @@ export async function generateMathTutorial(topic, grade) {
   return generate(prompt, sys)
 }
 
+export async function predictReaction(el1, el2) {
+  const sys = `You are a Virtual Science Lab assistant. 
+  When given two elements or substances, predict their chemical reaction.
+  If they react, provide: 1. Title of reaction, 2. Short description, 3. Visual effect (explosion, bubbles, color_change, or none).
+  If they don't react, say 'No significant reaction'.
+  Keep it educational and safe.`
+  
+  const prompt = `What happens when you mix ${el1} and ${el2}?`
+  return generate(prompt, sys)
+}
+
+export async function generatePhonicsLesson(level) {
+  const sys = `You are a Reading Specialist. Create a Phonics lesson for Level ${level}.
+  Include: 1. A core sound/phoneme, 2. A list of 5 simple words with that sound, 3. A short practice sentence.`
+  const prompt = `Generate a level ${level} phonics lesson.`
+  return generate(prompt, sys)
+}
+
+export async function generateStory(topic, level) {
+  const sys = `You are a Children's Book Author. Write a very short, engaging story (100 words max) for Reading Level ${level}.
+  Focus on the topic: ${topic}. Use simple language.`
+  const prompt = `Write a level ${level} story about ${topic}.`
+  return generate(prompt, sys)
+}
+
 export async function generateCoverLetter(data) {
   const sys = `You are a professional career coach writing persuasive, tailored cover letters.`
   const prompt = `Write a cover letter for:

@@ -52,6 +52,8 @@ const NAV_STRUCTURE = [
       { path: '/learning-path', label: 'Learning Path', icon: '🗺️' },
       { path: '/maths-lab', label: 'Maths Lab', icon: '📐' },
       { path: '/science-lab', label: 'Science Lab', icon: '⚗️' },
+      { path: '/reading-lab', label: 'Reading Lab', icon: '📖' },
+      { path: '/social-sciences-hub', label: 'Social Sciences', icon: '🌍' },
       { path: '/achievements', label: 'Achievements', icon: '🏆' },
       { path: '/institutions', label: 'Universities', icon: '🏛️' },
     ]
@@ -62,6 +64,7 @@ const NAV_STRUCTURE = [
     items: [
       { path: '/game/fluffy-jump', label: 'Fluffy Jump', icon: '☁️' },
       { path: '/game/word-quest', label: 'Word Quest', icon: '📝' },
+      { path: '/maths-games', label: 'Maths Brain Games', icon: '🧠' },
       { path: '/game/snake-game', label: 'Snake Game', icon: '🐍' },
     ]
   },
