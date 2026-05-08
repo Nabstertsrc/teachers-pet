@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #0a0e27;
+    /* Dark blue background congruent with Word Quest */
+}
