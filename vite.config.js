@@ -11,6 +11,7 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-utils': ['jspdf', 'html2canvas', 'docx', 'file-saver', 'mermaid'],
+          'vendor-math': ['katex', 'react-markdown', 'remark-math', 'rehype-katex'],
           'vendor-ai': ['@google/generative-ai'],
         }
       }

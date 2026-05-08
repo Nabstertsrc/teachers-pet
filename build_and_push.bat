@@ -2,7 +2,9 @@
 echo 🚀 Starting Build and Push Process...
 
 echo.
-echo [1/3] Installing dependencies (just in case)...
+echo [1/3] Cleaning up and installing missing dependencies...
+if exist "dist" rd /s /q dist
+call npm install katex remark-math rehype-katex --save
 call npm install
 
 echo.
