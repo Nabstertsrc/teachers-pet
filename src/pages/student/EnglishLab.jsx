@@ -5,28 +5,8 @@ import { useToast } from '../../context/AppContext'
 const GRADES = ['R','1','2','3','4','5','6','7','8','9','10','11','12']
 const GRADE_COLORS = { R:'#f472b6','1':'#fb923c','2':'#facc15','3':'#a3e635','4':'#34d399','5':'#22d3ee','6':'#60a5fa','7':'#818cf8','8':'#a78bfa','9':'#c084fc','10':'#e879f9','11':'#f472b6','12':'#fb7185' }
 
-const VOCAB_BY_LEVEL = {
-  foundation: [
-    { word: 'Happy', meaning: 'Feeling good or joyful', options: ['Sad', 'Feeling good or joyful', 'Angry', 'Tired'] },
-    { word: 'Big', meaning: 'Large in size', options: ['Small', 'Large in size', 'Fast', 'Quiet'] },
-    { word: 'Kind', meaning: 'Nice and caring', options: ['Mean', 'Nice and caring', 'Loud', 'Slow'] },
-  ],
-  intermediate: [
-    { word: 'Curious', meaning: 'Eager to learn or know', options: ['Bored', 'Eager to learn or know', 'Frightened', 'Lazy'] },
-    { word: 'Generous', meaning: 'Willing to give and share', options: ['Selfish', 'Willing to give and share', 'Shy', 'Angry'] },
-    { word: 'Ancient', meaning: 'Very old, from long ago', options: ['New', 'Very old, from long ago', 'Small', 'Bright'] },
-  ],
-  senior: [
-    { word: 'Ephemeral', meaning: 'Lasting for a very short time', options: ['Permanent', 'Lasting for a very short time', 'Very large', 'Extremely loud'] },
-    { word: 'Resilient', meaning: 'Able to recover quickly', options: ['Fragile', 'Dangerous', 'Able to recover quickly', 'Very slow'] },
-    { word: 'Eloquent', meaning: 'Fluent and persuasive in speech', options: ['Silent', 'Fluent and persuasive in speech', 'Confusing', 'Angry'] },
-  ],
-  fet: [
-    { word: 'Ubiquitous', meaning: 'Found everywhere', options: ['Rare', 'Found everywhere', 'Mysterious', 'Ancient'] },
-    { word: 'Meticulous', meaning: 'Showing great attention to detail', options: ['Careless', 'Showing great attention to detail', 'Very fast', 'Extremely lazy'] },
-    { word: 'Pragmatic', meaning: 'Dealing with things in a practical way', options: ['Idealistic', 'Dealing with things in a practical way', 'Emotional', 'Reckless'] },
-  ],
-}
+import { db } from '../../lib/db'
+import { generateLabContent } from '../../lib/gemini'
 
 const GRAMMAR_Q = [
   { sentence: 'She ___ to school every day.', options: ['go', 'goes', 'going', 'gone'], answer: 'goes', rule: 'Subject-Verb Agreement' },
@@ -56,19 +36,49 @@ export default function EnglishLab() {
   const [essay, setEssay] = useState('')
   const [promptIdx, setPromptIdx] = useState(0)
   const [wordCount, setWordCount] = useState(0)
+  const [vocabWords, setVocabWords] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const g = grade === 'R' ? 0 : parseInt(grade)
-  const band = g <= 3 ? 'foundation' : g <= 6 ? 'intermediate' : g <= 9 ? 'senior' : 'fet'
-  const VOCAB_WORDS = VOCAB_BY_LEVEL[band]
   const gc = GRADE_COLORS[grade]
 
+  useEffect(() => {
+    async function loadVocab() {
+      setLoading(true)
+      try {
+        const cached = await db.lab_content.where({ labType: 'english_vocab', grade }).first()
+        if (cached && cached.content) {
+          setVocabWords(cached.content)
+        } else {
+          toast('Generating new Vocabulary words...', 'info')
+          const words = await generateLabContent('english_vocab', grade)
+          if (words && words.length > 0) {
+            setVocabWords(words)
+            await db.lab_content.add({
+              labType: 'english_vocab',
+              grade,
+              content: words,
+              generatedAt: new Date().toISOString()
+            })
+          }
+        }
+      } catch (err) {
+        console.error(err)
+        toast('Failed to load vocabulary.', 'error')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadVocab()
+  }, [grade, toast])
+
   const checkVocab = (ans) => {
-    const correct = ans === VOCAB_WORDS[vocabIdx].meaning
+    if (!vocabWords || vocabWords.length === 0) return;
+    const correct = ans === vocabWords[vocabIdx].meaning
     setVocabFb(correct ? 'correct' : 'wrong')
     if (correct) setVocabScore(s => s + 10)
     setTimeout(() => {
       setVocabFb(null)
-      if (correct) setVocabIdx(i => (i + 1) % VOCAB_WORDS.length)
+      if (correct) setVocabIdx(i => (i + 1) % vocabWords.length)
     }, 1200)
   }
 
@@ -108,20 +118,29 @@ export default function EnglishLab() {
       <div className="lab-main">
         {tab === 'vocab' && (
           <div className="game-center">
-            <div className="game-card-lg">
-              <div className="gc-top"><h3>📚 Word Power</h3><span className="pill">🍎 {vocabScore}</span></div>
-              <motion.div key={vocabIdx} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="vocab-display">
-                <div className="big-word" style={{ color: gc }}>{VOCAB_WORDS[vocabIdx % VOCAB_WORDS.length].word}</div>
-                <p style={{ opacity: 0.6, marginBottom: 30 }}>What does this word mean?</p>
-                <div className="opts-col">
-                  {VOCAB_WORDS[vocabIdx].options.map(o => (
-                    <motion.button key={o} className="opt-btn" whileTap={{ scale: 0.96 }} onClick={() => !vocabFb && checkVocab(o)}>{o}</motion.button>
-                  ))}
-                </div>
-              </motion.div>
-              {vocabFb === 'correct' && <div className="fb-bar correct">✅ Correct! +10🍎</div>}
-              {vocabFb === 'wrong' && <div className="fb-bar wrong">❌ Try again!</div>}
-            </div>
+            {loading ? (
+              <div className="loading-overlay">
+                <div className="spinner"></div>
+                <div className="loading-text">Generating Dynamic Vocabulary...</div>
+              </div>
+            ) : vocabWords.length > 0 ? (
+              <div className="game-card-lg">
+                <div className="gc-top"><h3>📚 Word Power</h3><span className="pill">🍎 {vocabScore}</span></div>
+                <motion.div key={vocabIdx} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="vocab-display">
+                  <div className="big-word" style={{ color: gc }}>{vocabWords[vocabIdx % vocabWords.length].word}</div>
+                  <p style={{ opacity: 0.6, marginBottom: 30 }}>What does this word mean?</p>
+                  <div className="opts-col">
+                    {vocabWords[vocabIdx].options.map(o => (
+                      <motion.button key={o} className="opt-btn" whileTap={{ scale: 0.96 }} onClick={() => !vocabFb && checkVocab(o)}>{o}</motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+                {vocabFb === 'correct' && <div className="fb-bar correct">✅ Correct! +10🍎</div>}
+                {vocabFb === 'wrong' && <div className="fb-bar wrong">❌ Try again!</div>}
+              </div>
+            ) : (
+              <div style={{ color: 'white' }}>Failed to load content.</div>
+            )}
           </div>
         )}
 

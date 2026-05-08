@@ -58,6 +58,8 @@ const NAV_STRUCTURE = [
       { path: '/ems-hub', label: 'EMS Hub', icon: '💼' },
       { path: '/life-orientation', label: 'Life Orientation', icon: '🧭' },
       { path: '/technology-lab', label: 'Technology Lab', icon: '🛠️' },
+      { path: '/history-lab', label: 'History Lab', icon: '⏳' },
+      { path: '/natural-sciences-lab', label: 'Natural Sciences', icon: '🧬' },
       { path: '/achievements', label: 'Achievements', icon: '🏆' },
       { path: '/institutions', label: 'Universities', icon: '🏛️' },
     ]

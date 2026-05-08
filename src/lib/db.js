@@ -4,7 +4,7 @@ export const db = new Dexie('TeachersPetDB');
 
 // Schema definition for local storage (IndexedDB)
 // The fields after ++id are indexed for faster searching.
-db.version(2).stores({
+db.version(3).stores({
   lessons: '++id, userId, subject, grade, topic, createdAt',
   questionPapers: '++id, userId, subject, grade, topic, examType, createdAt',
   annualPlans: '++id, userId, subject, grade, createdAt',
@@ -16,7 +16,8 @@ db.version(2).stores({
   settings: 'id', // 'current' will be the id
   schoolProfile: 'id', // 'current' will be the id
   qms: '++id, userId, type, date',
-  interventions: '++id, userId, studentId, date'
+  interventions: '++id, userId, studentId, date',
+  lab_content: '++id, labType, grade, generatedAt'
 });
 
 /**

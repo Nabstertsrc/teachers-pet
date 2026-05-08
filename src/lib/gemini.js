@@ -487,3 +487,30 @@ export async function generateCoverLetter(data) {
   Make it professional, enthusiastic, and focused on how the candidate can add value to ${data.targetCompany}.`
   return generate(prompt, sys)
 }
+
+export async function generateLabContent(labType, grade) {
+  const sys = `You are a curriculum developer for the South African CAPS syllabus. 
+  Generate 10 interactive lesson items for the specified lab type and grade.
+  Output MUST be a raw JSON array of objects. No markdown formatting, no \`\`\`json wrappers. Just the raw array starting with [ and ending with ].`
+  
+  let prompt = ''
+  if (labType === 'history_timeline') {
+    prompt = `Generate a JSON array of 10 historical events for Grade ${grade} CAPS History. Format: [{"id": "1", "year": 1918, "event": "Event description"}]. Make sure the events are chronologically distinct and randomly ordered in the output so the student has to sort them.`
+  } else if (labType === 'english_vocab') {
+    prompt = `Generate a JSON array of 10 vocabulary words for Grade ${grade} CAPS English. Format: [{"word": "Ephemeral", "meaning": "Lasting for a very short time", "options": ["Permanent", "Lasting for a very short time", "Very large", "Extremely loud"]}]. Include one correct meaning and 3 plausible but incorrect options.`
+  } else if (labType === 'natural_science') {
+    prompt = `Generate a JSON array of 10 multiple choice questions for Grade ${grade} CAPS Natural Sciences. Format: [{"q": "Question text", "a": "Correct Answer", "options": ["Correct Answer", "Wrong 1", "Wrong 2"]}].`
+  } else {
+    prompt = `Generate a JSON array of 10 items for ${labType} for Grade ${grade}.`
+  }
+
+  const result = await generate(prompt, sys)
+  try {
+    // Strip potential markdown wrappers if the AI disobeys
+    const cleanResult = result.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    return JSON.parse(cleanResult)
+  } catch (e) {
+    console.error('Failed to parse AI lab content:', e, result)
+    return null
+  }
+}

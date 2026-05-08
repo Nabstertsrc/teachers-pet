@@ -539,3 +539,16 @@ a { color: var(--primary-light); text-decoration: none; }
   .page-title { font-size: 1.5rem; }
   .card { padding: 16px; }
 }
+
+/* ===== FULLSCREEN LAB OVERRIDES ===== */
+/* Ensures text is white in the dark immersive lab modules, overriding default p/label/span colors */
+.lab-fullscreen p, .lab-fullscreen label, .lab-fullscreen span, .lab-fullscreen h1, .lab-fullscreen h2, .lab-fullscreen h3, .lab-fullscreen div,
+.science-lab-fullscreen p, .science-lab-fullscreen label, .science-lab-fullscreen span, .science-lab-fullscreen h1, .science-lab-fullscreen h2, .science-lab-fullscreen h3, .science-lab-fullscreen div,
+.mg-full p, .mg-full label, .mg-full span, .mg-full h1, .mg-full h2, .mg-full h3, .mg-full div {
+  color: #f8fafc;
+}
+
+/* Specific overrides for specific components inside labs that need their own color (like hints, empty states) */
+.lab-fullscreen .empty-hint, .science-lab-fullscreen .empty-hint, .mg-full .empty-hint {
+  color: #94a3b8 !important;
+}

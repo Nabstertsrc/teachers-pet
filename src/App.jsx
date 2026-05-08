@@ -5,42 +5,46 @@ import { VoiceProvider } from './context/VoiceContext'
 import Sidebar from './components/Sidebar'
 import VoiceBar from './components/VoiceBar'
 import AIAssistant from './components/AIAssistant'
-import Dashboard from './pages/Dashboard'
-import LessonGenerator from './pages/LessonGenerator'
-import AnnualPlan from './pages/AnnualPlan'
-import QuestionPaper from './pages/QuestionPaper'
-import Timetable from './pages/Timetable'
-import Gradebook from './pages/Gradebook'
-import Resources from './pages/Resources'
-import StudentPortal from './pages/StudentPortal'
-import Todo from './pages/Todo'
-import ParentComm from './pages/ParentComm'
-import Attendance from './pages/Attendance'
-import RubricGenerator from './pages/RubricGenerator'
-import ReportCard from './pages/ReportCard'
-import Settings from './pages/Settings'
-import Professionalism from './pages/Professionalism'
-import CareerTools from './pages/CareerTools'
-import StudentDashboard from './pages/student/StudentDashboard'
-import IPTPortfolio from './pages/IPTPortfolio'
-import AcademicCoach from './pages/AcademicCoach'
-import ClassroomIdeas from './pages/ClassroomIdeas'
-import Assignments from './pages/student/Assignments'
-import LearningPath from './pages/student/LearningPath'
-import AutoOrganizer from './pages/student/AutoOrganizer'
-import Achievements from './pages/student/Achievements'
-import OpportunitiesHub from './pages/student/OpportunitiesHub'
-import Institutions from './pages/student/Institutions'
-import MathsLab from './pages/student/MathsLab'
-import ScienceLab from './pages/student/ScienceLab'
-import ReadingLab from './pages/student/ReadingLab'
-import MathsGames from './pages/student/MathsGames'
-import SocialSciencesHub from './pages/student/SocialSciencesHub'
-import EnglishLab from './pages/student/EnglishLab'
-import EMSHub from './pages/student/EMSHub'
-import LifeOrientationHub from './pages/student/LifeOrientationHub'
-import TechnologyLab from './pages/student/TechnologyLab'
-import GamePlayer from './pages/student/GamePlayer'
+import React, { Suspense } from 'react'
+
+const Dashboard = React.lazy(() => import('./pages/Dashboard'))
+const LessonGenerator = React.lazy(() => import('./pages/LessonGenerator'))
+const AnnualPlan = React.lazy(() => import('./pages/AnnualPlan'))
+const QuestionPaper = React.lazy(() => import('./pages/QuestionPaper'))
+const Timetable = React.lazy(() => import('./pages/Timetable'))
+const Gradebook = React.lazy(() => import('./pages/Gradebook'))
+const Resources = React.lazy(() => import('./pages/Resources'))
+const StudentPortal = React.lazy(() => import('./pages/StudentPortal'))
+const Todo = React.lazy(() => import('./pages/Todo'))
+const ParentComm = React.lazy(() => import('./pages/ParentComm'))
+const Attendance = React.lazy(() => import('./pages/Attendance'))
+const RubricGenerator = React.lazy(() => import('./pages/RubricGenerator'))
+const ReportCard = React.lazy(() => import('./pages/ReportCard'))
+const Settings = React.lazy(() => import('./pages/Settings'))
+const Professionalism = React.lazy(() => import('./pages/Professionalism'))
+const CareerTools = React.lazy(() => import('./pages/CareerTools'))
+const StudentDashboard = React.lazy(() => import('./pages/student/StudentDashboard'))
+const IPTPortfolio = React.lazy(() => import('./pages/IPTPortfolio'))
+const AcademicCoach = React.lazy(() => import('./pages/AcademicCoach'))
+const ClassroomIdeas = React.lazy(() => import('./pages/ClassroomIdeas'))
+const Assignments = React.lazy(() => import('./pages/student/Assignments'))
+const LearningPath = React.lazy(() => import('./pages/student/LearningPath'))
+const AutoOrganizer = React.lazy(() => import('./pages/student/AutoOrganizer'))
+const Achievements = React.lazy(() => import('./pages/student/Achievements'))
+const OpportunitiesHub = React.lazy(() => import('./pages/student/OpportunitiesHub'))
+const Institutions = React.lazy(() => import('./pages/student/Institutions'))
+const MathsLab = React.lazy(() => import('./pages/student/MathsLab'))
+const ScienceLab = React.lazy(() => import('./pages/student/ScienceLab'))
+const ReadingLab = React.lazy(() => import('./pages/student/ReadingLab'))
+const MathsGames = React.lazy(() => import('./pages/student/MathsGames'))
+const SocialSciencesHub = React.lazy(() => import('./pages/student/SocialSciencesHub'))
+const EnglishLab = React.lazy(() => import('./pages/student/EnglishLab'))
+const EMSHub = React.lazy(() => import('./pages/student/EMSHub'))
+const LifeOrientationHub = React.lazy(() => import('./pages/student/LifeOrientationHub'))
+const TechnologyLab = React.lazy(() => import('./pages/student/TechnologyLab'))
+const HistoryLab = React.lazy(() => import('./pages/student/HistoryLab'))
+const NaturalSciencesLab = React.lazy(() => import('./pages/student/NaturalSciencesLab'))
+const GamePlayer = React.lazy(() => import('./pages/student/GamePlayer'))
 
 function AppShell() {
   const { sidebarCollapsed, mobileMenuOpen, setMobileMenuOpen } = useApp()
@@ -68,47 +72,51 @@ function AppShell() {
       <Sidebar />
       
       <div className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`} style={{ paddingBottom: 64 }}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/lessons" element={<LessonGenerator />} />
-          <Route path="/annual-plan" element={<AnnualPlan />} />
-          <Route path="/question-paper" element={<QuestionPaper />} />
-          <Route path="/timetable" element={<Timetable />} />
-          <Route path="/gradebook" element={<Gradebook />} />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/rubric" element={<RubricGenerator />} />
-          <Route path="/report-card" element={<ReportCard />} />
-          <Route path="/professionalism" element={<Professionalism />} />
-          <Route path="/career-tools" element={<CareerTools />} />
-          <Route path="/ipt-portfolio" element={<IPTPortfolio />} />
-          <Route path="/academic-coach" element={<AcademicCoach />} />
-          <Route path="/classroom-ideas" element={<ClassroomIdeas />} />
-          
-          {/* Student Section */}
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/assignments" element={<Assignments />} />
-          <Route path="/learning-path" element={<LearningPath />} />
-          <Route path="/auto-organizer" element={<AutoOrganizer />} />
-          <Route path="/achievements" element={<Achievements />} />
-          <Route path="/opportunities" element={<OpportunitiesHub />} />
-          <Route path="/institutions" element={<Institutions />} />
-          <Route path="/maths-lab" element={<MathsLab />} />
-          <Route path="/science-lab" element={<ScienceLab />} />
-          <Route path="/reading-lab" element={<ReadingLab />} />
-          <Route path="/maths-games" element={<MathsGames />} />
-          <Route path="/social-sciences-hub" element={<SocialSciencesHub />} />
-          <Route path="/english-lab" element={<EnglishLab />} />
-          <Route path="/ems-hub" element={<EMSHub />} />
-          <Route path="/life-orientation" element={<LifeOrientationHub />} />
-          <Route path="/technology-lab" element={<TechnologyLab />} />
-          <Route path="/game/:gameId" element={<GamePlayer />} />
-          
-          {/* Tools */}
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/todo" element={<Todo />} />
-          <Route path="/parent-comm" element={<ParentComm />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <Suspense fallback={<div className="loading-overlay" style={{ height: '100vh' }}><div className="spinner"></div><div className="loading-text">Loading Module...</div></div>}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/lessons" element={<LessonGenerator />} />
+            <Route path="/annual-plan" element={<AnnualPlan />} />
+            <Route path="/question-paper" element={<QuestionPaper />} />
+            <Route path="/timetable" element={<Timetable />} />
+            <Route path="/gradebook" element={<Gradebook />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/rubric" element={<RubricGenerator />} />
+            <Route path="/report-card" element={<ReportCard />} />
+            <Route path="/professionalism" element={<Professionalism />} />
+            <Route path="/career-tools" element={<CareerTools />} />
+            <Route path="/ipt-portfolio" element={<IPTPortfolio />} />
+            <Route path="/academic-coach" element={<AcademicCoach />} />
+            <Route path="/classroom-ideas" element={<ClassroomIdeas />} />
+            
+            {/* Student Section */}
+            <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/assignments" element={<Assignments />} />
+            <Route path="/learning-path" element={<LearningPath />} />
+            <Route path="/auto-organizer" element={<AutoOrganizer />} />
+            <Route path="/achievements" element={<Achievements />} />
+            <Route path="/opportunities" element={<OpportunitiesHub />} />
+            <Route path="/institutions" element={<Institutions />} />
+            <Route path="/maths-lab" element={<MathsLab />} />
+            <Route path="/science-lab" element={<ScienceLab />} />
+            <Route path="/reading-lab" element={<ReadingLab />} />
+            <Route path="/maths-games" element={<MathsGames />} />
+            <Route path="/social-sciences-hub" element={<SocialSciencesHub />} />
+            <Route path="/english-lab" element={<EnglishLab />} />
+            <Route path="/ems-hub" element={<EMSHub />} />
+            <Route path="/life-orientation" element={<LifeOrientationHub />} />
+            <Route path="/technology-lab" element={<TechnologyLab />} />
+            <Route path="/history-lab" element={<HistoryLab />} />
+            <Route path="/natural-sciences-lab" element={<NaturalSciencesLab />} />
+            <Route path="/game/:gameId" element={<GamePlayer />} />
+            
+            {/* Tools */}
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/todo" element={<Todo />} />
+            <Route path="/parent-comm" element={<ParentComm />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </Suspense>
       </div>
       <AIAssistant />
       <VoiceBar collapsed={sidebarCollapsed} />
