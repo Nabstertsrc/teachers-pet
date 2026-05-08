@@ -55,6 +55,15 @@ const NAV_STRUCTURE = [
     ]
   },
   {
+    title: 'BRAIN GAMES',
+    icon: '📂',
+    items: [
+      { path: '/game/fluffy-jump', label: 'Fluffy Jump', icon: '☁️' },
+      { path: '/game/word-quest', label: 'Word Quest', icon: '📝' },
+      { path: '/game/snake-game', label: 'Snake Game', icon: '🐍' },
+    ]
+  },
+  {
     title: 'TOOLS',
     icon: '📂',
     items: [
