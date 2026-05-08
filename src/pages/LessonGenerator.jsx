@@ -167,7 +167,6 @@ export default function LessonGenerator() {
           {result && (
             <>
               <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
-              <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
                 <button className="btn btn-success" onClick={handleSave}>💾 Save</button>
                 <button className="btn btn-primary" onClick={handleExportDocx}>📄 Word</button>
                 <button className="btn btn-secondary" onClick={handleExportPdf}>📑 PDF</button>
