@@ -1,0 +1,31 @@
+{
+    "expo": {
+        "name": "Color Mix Snake",
+        "slug": "color-mix-snake",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "dark",
+        "splash": {
+            "image": "./assets/icon.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#1e293b"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": true
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/icon.png",
+                "backgroundColor": "#1e293b"
+            },
+            "package": "com.antigravity.colorsnake"
+        },
+        "web": {
+            "favicon": "./assets/icon.png"
+        }
+    }
+}
