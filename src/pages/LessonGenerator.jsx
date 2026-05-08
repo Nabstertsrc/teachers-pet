@@ -167,12 +167,14 @@ export default function LessonGenerator() {
           {result && (
             <>
               <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
-                <button className="btn btn-success" onClick={handleSave}>💾 Save to Library</button>
-                <button className="btn btn-primary" onClick={handleExportDocx}>📄 Export Word (.docx)</button>
-                <button className="btn btn-secondary" onClick={handleExportPdf}>📑 Export PDF</button>
-                <button className="btn btn-ghost" onClick={()=>setTab('generate')}>✏️ Edit Details</button>
+              <div style={{ display:'flex', gap:10, marginBottom:20, flexWrap:'wrap' }}>
+                <button className="btn btn-success" onClick={handleSave}>💾 Save</button>
+                <button className="btn btn-primary" onClick={handleExportDocx}>📄 Word</button>
+                <button className="btn btn-secondary" onClick={handleExportPdf}>📑 PDF</button>
+                <button className="btn btn-ghost" onClick={()=>document.getElementById('lesson-preview').requestFullscreen()}>📺 Fullscreen</button>
+                <button className="btn btn-ghost" onClick={()=>setTab('generate')}>✏️ Edit</button>
               </div>
-              <div id="lesson-preview" className="card" style={{ maxWidth:900, padding:40 }}>
+              <div id="lesson-preview" className="card lesson-fullscreen-capable" style={{ maxWidth:900, padding:40, margin: '0 auto' }}>
                 <div style={{ textAlign:'center', borderBottom:'2px solid var(--border-light)', paddingBottom:20, marginBottom:20 }}>
                   {school?.logo && (
                     <div style={{ width: '100%', height: '220px', marginBottom: 20, overflow: 'hidden', borderRadius: 'var(--radius)' }}>
@@ -232,6 +234,17 @@ export default function LessonGenerator() {
           }
         </div>
       )}
+      <style>{`
+        .lesson-fullscreen-capable:fullscreen {
+          background: white;
+          width: 100vw !important;
+          height: 100vh !important;
+          max-width: none !important;
+          overflow-y: auto;
+          padding: 60px !important;
+          border-radius: 0;
+        }
+      `}</style>
     </div>
   )
 }
