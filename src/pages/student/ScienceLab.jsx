@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../../context/AppContext'
-import { predictReaction, generateMathTutorial } from '../../lib/gemini'
+import { predictReaction } from '../../lib/gemini'
 
 const ELEMENTS = [
   { symbol: 'H', name: 'Hydrogen', color: '#fff', group: 'nonmetal' },

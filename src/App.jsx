@@ -36,6 +36,10 @@ import ScienceLab from './pages/student/ScienceLab'
 import ReadingLab from './pages/student/ReadingLab'
 import MathsGames from './pages/student/MathsGames'
 import SocialSciencesHub from './pages/student/SocialSciencesHub'
+import EnglishLab from './pages/student/EnglishLab'
+import EMSHub from './pages/student/EMSHub'
+import LifeOrientationHub from './pages/student/LifeOrientationHub'
+import TechnologyLab from './pages/student/TechnologyLab'
 import GamePlayer from './pages/student/GamePlayer'
 
 function AppShell() {
@@ -93,6 +97,10 @@ function AppShell() {
           <Route path="/reading-lab" element={<ReadingLab />} />
           <Route path="/maths-games" element={<MathsGames />} />
           <Route path="/social-sciences-hub" element={<SocialSciencesHub />} />
+          <Route path="/english-lab" element={<EnglishLab />} />
+          <Route path="/ems-hub" element={<EMSHub />} />
+          <Route path="/life-orientation" element={<LifeOrientationHub />} />
+          <Route path="/technology-lab" element={<TechnologyLab />} />
           <Route path="/game/:gameId" element={<GamePlayer />} />
           
           {/* Tools */}

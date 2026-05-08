@@ -54,6 +54,10 @@ const NAV_STRUCTURE = [
       { path: '/science-lab', label: 'Science Lab', icon: '⚗️' },
       { path: '/reading-lab', label: 'Reading Lab', icon: '📖' },
       { path: '/social-sciences-hub', label: 'Social Sciences', icon: '🌍' },
+      { path: '/english-lab', label: 'English Lab', icon: '📝' },
+      { path: '/ems-hub', label: 'EMS Hub', icon: '💼' },
+      { path: '/life-orientation', label: 'Life Orientation', icon: '🧭' },
+      { path: '/technology-lab', label: 'Technology Lab', icon: '🛠️' },
       { path: '/achievements', label: 'Achievements', icon: '🏆' },
       { path: '/institutions', label: 'Universities', icon: '🏛️' },
     ]
