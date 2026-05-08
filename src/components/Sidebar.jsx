@@ -50,6 +50,7 @@ const NAV_STRUCTURE = [
       { path: '/auto-organizer', label: 'Auto-Organizer', icon: '📂' },
       { path: '/assignments', label: 'Assignments', icon: '📋' },
       { path: '/learning-path', label: 'Learning Path', icon: '🗺️' },
+      { path: '/maths-lab', label: 'Maths Lab', icon: '📐' },
       { path: '/achievements', label: 'Achievements', icon: '🏆' },
       { path: '/institutions', label: 'Universities', icon: '🏛️' },
     ]

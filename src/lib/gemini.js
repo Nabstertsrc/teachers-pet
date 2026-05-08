@@ -427,6 +427,29 @@ export async function generateResume(data) {
   return generate(prompt, sys)
 }
 
+export async function solveMathProblem(problem, grade) {
+  const sys = `You are an expert Math Tutor. Solve the problem step-by-step. 
+  Explain the logic behind each step clearly. 
+  Use LaTeX formatting for all mathematical expressions (e.g. $x^2 + y^2 = r^2$).
+  Tailor the explanation for Grade ${grade}.`
+  
+  const prompt = `Solve and explain this math problem: ${problem}`
+  return generate(prompt, sys)
+}
+
+export async function generateMathTutorial(topic, grade) {
+  const sys = `You are a creative Math Teacher. Create an interactive-style tutorial for Grade ${grade}.
+  Include: 
+  1. A 'Catchy' Introduction
+  2. Key Concepts
+  3. 3 Practice Examples with solutions
+  4. A 'Pro-Tip' for mastering this topic.
+  Use LaTeX for formulas.`
+  
+  const prompt = `Create a tutorial for Grade ${grade} on the topic: ${topic}`
+  return generate(prompt, sys)
+}
+
 export async function generateCoverLetter(data) {
   const sys = `You are a professional career coach writing persuasive, tailored cover letters.`
   const prompt = `Write a cover letter for:

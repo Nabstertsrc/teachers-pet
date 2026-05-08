@@ -31,6 +31,7 @@ import AutoOrganizer from './pages/student/AutoOrganizer'
 import Achievements from './pages/student/Achievements'
 import OpportunitiesHub from './pages/student/OpportunitiesHub'
 import Institutions from './pages/student/Institutions'
+import MathsLab from './pages/student/MathsLab'
 import GamePlayer from './pages/student/GamePlayer'
 
 function AppShell() {
@@ -83,6 +84,7 @@ function AppShell() {
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/opportunities" element={<OpportunitiesHub />} />
           <Route path="/institutions" element={<Institutions />} />
+          <Route path="/maths-lab" element={<MathsLab />} />
           <Route path="/game/:gameId" element={<GamePlayer />} />
           
           {/* Tools */}
