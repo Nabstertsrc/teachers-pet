@@ -108,3 +108,34 @@ export const saveAttendance = async (records) => {
   await db.attendance.bulkAdd(records)
 }
 
+// School Profile (Singleton)
+export const getSchoolProfile = async () => {
+  const p = await db.schoolProfile.get('current')
+  return p || {
+    name: '',
+    address: '',
+    phone: '',
+    email: '',
+    website: '',
+    logo: null, // Base64 string
+    letterhead: null, // Base64 string
+    register: [], // Array of students [{name, id, grade}]
+  }
+}
+export const saveSchoolProfile = async (p) => {
+  return await db.schoolProfile.put({ ...p, id: 'current' })
+}
+
+// QMS
+export const getQMS = () => db.qms.reverse().toArray()
+export const addQMS = async (record) => {
+  const id = await db.qms.add({ ...record, createdAt: new Date().toISOString() })
+  return { ...record, id }
+}
+
+// Interventions
+export const getInterventions = () => db.interventions.reverse().toArray()
+export const addIntervention = async (record) => {
+  const id = await db.interventions.add({ ...record, createdAt: new Date().toISOString() })
+  return { ...record, id }
+}

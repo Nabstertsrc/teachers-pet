@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak } from 'docx'
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, PageBreak, ImageRun } from 'docx'
 import { saveAs } from 'file-saver'
 
 // ===== DOCX Export =====
@@ -66,18 +66,57 @@ function elementsToDocx(elements) {
   return children
 }
 
-export async function exportToDocx({ title, content, filename = 'document', schoolName = 'Teacher\'s Pet', subject = '', grade = '' }) {
+export async function exportToDocx({ title, content, filename = 'document', school = {}, subject = '', grade = '' }) {
   const primaryColor = '0078D4' // Office Blue
+  const schoolName = school?.name || 'Teacher\'s Pet'
   
+  let bannerParagraph = null
+  if (school?.logo) {
+    try {
+      const base64Data = school.logo.split(',')[1]
+      const binaryString = window.atob(base64Data)
+      const len = binaryString.length
+      const bytes = new Uint8Array(len)
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
+      }
+      
+      bannerParagraph = new Paragraph({
+        children: [
+          new ImageRun({
+            data: bytes,
+            transformation: {
+              width: 600,
+              height: 120,
+            },
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 400 }
+      })
+    } catch (e) {
+      console.error("Banner export failed", e)
+    }
+  }
+
   const headerParagraphs = [
+    bannerParagraph,
     new Paragraph({
       children: [new TextRun({ text: schoolName.toUpperCase(), bold: true, size: 24, color: primaryColor, font: 'Segoe UI' })],
       alignment: AlignmentType.CENTER,
     }),
-    new Paragraph({
-      children: [new TextRun({ text: `${subject}${grade ? ' | ' + grade : ''}`, size: 18, color: '666666', font: 'Segoe UI' })],
+    school?.address && new Paragraph({
+      children: [new TextRun({ text: school.address, size: 16, color: '666666', font: 'Segoe UI' })],
       alignment: AlignmentType.CENTER,
-      spacing: { after: 200 }
+    }),
+    (school?.phone || school?.email) && new Paragraph({
+      children: [new TextRun({ text: `${school.phone || ''} ${school.email ? ' | ' + school.email : ''}`, size: 14, color: '888888', font: 'Segoe UI' })],
+      alignment: AlignmentType.CENTER,
+    }),
+    new Paragraph({
+      children: [new TextRun({ text: `${subject}${grade ? ' | ' + grade : ''}`, size: 18, color: '333333', font: 'Segoe UI', bold: true })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 100, after: 200 }
     }),
     new Paragraph({
       border: { bottom: { color: primaryColor, space: 1, style: BorderStyle.SINGLE, size: 6 } },
@@ -85,12 +124,12 @@ export async function exportToDocx({ title, content, filename = 'document', scho
     }),
     new Paragraph({ text: '', spacing: { before: 200 } }),
     new Paragraph({
-      children: [new TextRun({ text: title, bold: true, size: 36, color: '000000', font: 'Segoe UI' })],
+      children: [new TextRun({ text: title, bold: true, size: 32, color: '000000', font: 'Segoe UI' })],
       heading: HeadingLevel.HEADING_1,
       alignment: AlignmentType.LEFT,
     }),
     new Paragraph({ text: '', spacing: { before: 200 } }),
-  ]
+  ].filter(Boolean)
 
   const doc = new Document({
     sections: [{
@@ -118,7 +157,7 @@ export async function exportToDocx({ title, content, filename = 'document', scho
 }
 
 // ===== PDF Export (html2canvas + jsPDF) =====
-export async function exportToPDF(elementId, filename = 'document') {
+export async function exportToPDF(elementId, filename = 'document', quality = 0.75) {
   const { default: html2canvas } = await import('html2canvas')
   const { default: jsPDF } = await import('jspdf')
 
@@ -130,22 +169,27 @@ export async function exportToPDF(elementId, filename = 'document') {
   const bgColor = (theme === 'dark' || theme === 'midnight') ? '#121212' : '#FFFFFF'
   const textColor = (theme === 'dark' || theme === 'midnight') ? '#FFFFFF' : '#000000'
 
+  // Reduced scale from 2 to 1.5 for smaller file size without sacrificing much quality
+  // For extreme compression, use scale: 1
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: 1.5,
     useCORS: true,
     backgroundColor: bgColor,
     logging: false,
     onclone: (clonedDoc) => {
       const el = clonedDoc.getElementById(elementId)
-      el.style.color = textColor
-      el.style.padding = '40px'
-      el.style.borderRadius = '0'
-      el.style.background = bgColor
+      if (el) {
+        el.style.color = textColor
+        el.style.padding = '40px'
+        el.style.borderRadius = '0'
+        el.style.background = bgColor
+      }
     }
   })
 
-  const imgData = canvas.toDataURL('image/png')
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  // Use JPEG instead of PNG for massive size reduction
+  const imgData = canvas.toDataURL('image/jpeg', quality)
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true })
   const pdfWidth = pdf.internal.pageSize.getWidth()
   const pdfHeight = (canvas.height * pdfWidth) / canvas.width
 
@@ -153,7 +197,8 @@ export async function exportToPDF(elementId, filename = 'document') {
   const pageHeight = pdf.internal.pageSize.getHeight()
   while (yOffset < pdfHeight) {
     if (yOffset > 0) pdf.addPage()
-    pdf.addImage(imgData, 'PNG', 0, -yOffset, pdfWidth, pdfHeight)
+    // Using 'JPEG' and setting compression to 'FAST' or 'MEDIUM'
+    pdf.addImage(imgData, 'JPEG', 0, -yOffset, pdfWidth, pdfHeight, undefined, 'FAST')
     yOffset += pageHeight
   }
 

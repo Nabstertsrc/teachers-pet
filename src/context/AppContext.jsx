@@ -8,6 +8,7 @@ export const useApp = () => useContext(AppContext)
 
 export function AppProvider({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('tp_theme') || 'office')
   const [toasts, setToasts] = useState([])
@@ -40,6 +41,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{ 
       sidebarCollapsed, setSidebarCollapsed, 
+      mobileMenuOpen, setMobileMenuOpen,
       aiPanelOpen, setAiPanelOpen, 
       aiMessages, setAiMessages,
       aiLoading, setAiLoading,

@@ -306,3 +306,136 @@ For each activity, include:
   const prompt = `Generate 5 creative classroom activities for the topic: ${topic}`
   return generate(prompt, sys)
 }
+export async function generateQuiz({ subject, topic, difficulty, count = 5 }) {
+  const sys = `You are a quiz master. Create a multiple-choice quiz. Return ONLY valid JSON array.`
+  const prompt = `Create a ${count} question quiz on ${subject}: ${topic} at ${difficulty} level.
+  Return ONLY a JSON array: [{"question": "...", "options": ["A", "B", "C", "D"], "answer": "index of correct option (0-3)", "explanation": "..."}]`
+  const raw = await generate(prompt, sys)
+  try {
+    const match = raw.match(/\[[\s\S]*\]/)
+    return JSON.parse(match ? match[0] : raw)
+  } catch { return [] }
+}
+
+export async function summarizeNotes(content) {
+  const sys = `You are an expert at summarizing long educational content into structured, concise notes.`
+  const prompt = `Please summarize the following content into a structured format with:
+  1. Executive Summary
+  2. Key Concepts (Bullet points)
+  3. Simplified Explanation (For complex parts)
+  4. 3 Revision Questions
+  
+  Content:\n${content.slice(0, 15000)}`
+  return generate(prompt, sys)
+}
+
+export async function deepDiveConcept(concept) {
+  const sys = `You are a specialist in explaining complex concepts using the Feynman Technique (simply and clearly).`
+  const prompt = `Provide a "Deep Dive" into the concept: "${concept}".
+  Use analogies, clear examples, and avoid overly technical jargon where possible. Explain it like I'm 12.`
+  return generate(prompt, sys)
+}
+
+export async function analyzeDocument(content) {
+  const sys = `You are an academic organizer. Extract metadata from the provided content.`
+  const prompt = `Analyze this document content and return ONLY a JSON object:
+  {
+    "subject": "e.g. Mathematics",
+    "moduleCode": "e.g. MAT1511",
+    "topics": ["topic1", "topic2"],
+    "isAssignment": true/false,
+    "dueDate": "YYYY-MM-DD (if found)",
+    "summary": "Short 1-sentence summary"
+  }
+  
+  Content:\n${content.slice(0, 10000)}`
+  const raw = await generate(prompt, sys)
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    return JSON.parse(match ? match[0] : raw)
+  } catch { return null }
+}
+
+export async function searchOpportunities(query) {
+  const sys = `You are a Career & Study Opportunity Scout for South African students and teachers. 
+  CURRENT DATE: May 2026. 
+  Provide the latest real-world 2026/2027 opportunities based on your knowledge. 
+  Include: Title, Source, Deadline (if known), and a direct Official Link.
+  Format as a JSON array of objects.`
+  const prompt = `Find the latest ${query} in South Africa for the 2026/2027 cycle. Return ONLY JSON array.`
+  const raw = await generate(prompt, sys)
+  try {
+    const match = raw.match(/\[[\s\S]*\]/)
+    return JSON.parse(match ? match[0] : raw)
+  } catch { return [] }
+}
+
+export async function generateInterventionStrategy({ studentName, grade, subject, issue, context }) {
+  const prompt = `You are an expert Educational Psychologist and Master Teacher. 
+  Create a tailored Learner Intervention Strategy for:
+  Student: ${studentName}
+  Grade: ${grade}
+  Subject: ${subject}
+  Primary Issue: ${issue}
+  Additional Context: ${context}
+
+  Provide:
+  1. Root cause analysis (potential reasons).
+  2. Immediate classroom strategies (for the teacher).
+  3. Home support suggestions (for parents).
+  4. SMART goals for improvement.
+  5. Recommended resources or tools.
+
+  Format the output in professional Markdown.`
+  return generate(prompt)
+}
+
+export async function generateResume(data) {
+  const sys = `You are a professional CV writer and career coach. 
+  Create a modern, impact-driven resume that is ATS-friendly.
+  If mode is 'extract', return ONLY a JSON object of the details found.
+  Otherwise, return a beautiful Markdown-formatted Resume.`
+  
+  if (data.mode === 'extract') {
+    const prompt = `Extract info from this text into JSON (name, email, phone, linkedIn, education, experience, skills): \n\n${data.scanContent}`
+    const res = await generate(prompt, sys)
+    const match = res.match(/\{[\s\S]*\}/)
+    return match ? match[0] : res
+  }
+
+  if (data.mode === 'bio') {
+    const prompt = `Create a professional LinkedIn Headline, 'About' section, and a short Professional Bio for:
+    Name: ${data.name}
+    Role: ${data.targetRole}
+    Experience: ${data.experience}
+    Skills: ${data.skills}
+    
+    Format for maximum impact and keywords.`
+    return generate(prompt, sys)
+  }
+
+  const prompt = `Create a professional resume for:
+  Name: ${data.name}
+  Contact: ${data.email}, ${data.phone}, ${data.linkedIn}
+  Target Role: ${data.targetRole}
+  Experience: ${data.experience}
+  Education: ${data.education}
+  Skills: ${data.skills}
+  ${data.additionalInfo ? `Additional Info: ${data.additionalInfo}` : ''}
+  
+  Structure it with clear headings, bullet points, and a summary section.`
+  return generate(prompt, sys)
+}
+
+export async function generateCoverLetter(data) {
+  const sys = `You are a professional career coach writing persuasive, tailored cover letters.`
+  const prompt = `Write a cover letter for:
+  Name: ${data.name}
+  Target Role: ${data.targetRole}
+  Target Company/School: ${data.targetCompany}
+  Key Experience: ${data.experience}
+  Key Skills: ${data.skills}
+  
+  Make it professional, enthusiastic, and focused on how the candidate can add value to ${data.targetCompany}.`
+  return generate(prompt, sys)
+}

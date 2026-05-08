@@ -30,16 +30,17 @@ export default function LessonGenerator() {
   const [result, setResult] = useState('')
   const [tab, setTab] = useState('generate')
   const [lessons, setLessons] = useState([])
+  const [school, setSchool] = useState(null)
   const [templateFile, setTemplateFile] = useState(null)
   const [templateText, setTemplateText] = useState('')
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     const load = async () => {
-      const s = await getSettings()
+      const [s, l, sch] = await Promise.all([getSettings(), getLessons(), getSchoolProfile()])
       setSettings(s)
-      const l = await getLessons()
       setLessons(l)
+      setSchool(sch)
     }
     load()
   }, [])
@@ -71,7 +72,7 @@ export default function LessonGenerator() {
 
   const handleExportDocx = () => {
     if (!result) return
-    exportToDocx({ title: form.topic, content: result, filename: `Lesson_${form.topic.replace(/\s/g,'_')}`, schoolName: settings.schoolName, subject: form.subject, grade: form.grade })
+    exportToDocx({ title: form.topic, content: result, filename: `Lesson_${form.topic.replace(/\s/g,'_')}`, school, subject: form.subject, grade: form.grade })
     toast('Exported to Word! 📄', 'success')
   }
 
@@ -171,15 +172,26 @@ export default function LessonGenerator() {
                 <button className="btn btn-secondary" onClick={handleExportPdf}>📑 Export PDF</button>
                 <button className="btn btn-ghost" onClick={()=>setTab('generate')}>✏️ Edit Details</button>
               </div>
-              <div id="lesson-preview" className="card" style={{ maxWidth:900 }}>
-                <div style={{ background:'var(--primary)', margin:'-24px -24px 24px', padding:'24px', borderRadius:'var(--radius-lg) var(--radius-lg) 0 0' }}>
-                  <div style={{ fontSize:'0.85rem', color:'rgba(255,255,255,0.7)' }}>{settings.schoolName}</div>
-                  <h2 style={{ color:'#fff', marginTop:4 }}>{form.topic}</h2>
-                  <div style={{ display:'flex', gap:12, marginTop:8 }}>
-                    {[form.subject, form.grade, `${form.duration} min`, form.style].filter(Boolean).map((t,i)=>(
-                      <span key={i} style={{ background:'rgba(255,255,255,0.15)', padding:'2px 10px', borderRadius:99, fontSize:'0.78rem', color:'#fff' }}>{t}</span>
-                    ))}
+              <div id="lesson-preview" className="card" style={{ maxWidth:900, padding:40 }}>
+                <div style={{ textAlign:'center', borderBottom:'2px solid var(--border-light)', paddingBottom:20, marginBottom:20 }}>
+                  {school?.logo && (
+                    <div style={{ width: '100%', height: '220px', marginBottom: 20, overflow: 'hidden', borderRadius: 'var(--radius)' }}>
+                      <img src={school.logo} alt="School Letterhead" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} />
+                    </div>
+                  )}
+                  <div style={{ padding: '0 20px' }}>
+                    <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>{school?.name?.toUpperCase() || settings.schoolName?.toUpperCase()}</h2>
+                    {school?.address && <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:'4px 0' }}>{school.address}</p>}
+                    {(school?.phone || school?.email) && (
+                      <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:0 }}>
+                        {school.phone && `Tel: ${school.phone}`} {school.email && ` | ${school.email}`}
+                      </p>
+                    )}
                   </div>
+                </div>
+                <h1 style={{ fontSize:'1.4rem', margin:'12px 0', color:'var(--primary)', borderTop:'1px solid var(--border-light)', paddingTop:12 }}>{form.topic?.toUpperCase()}</h1>
+                <div style={{ display:'flex', justifyContent:'center', gap:24, fontSize:'0.88rem', color:'var(--text-secondary)', marginTop:8 }}>
+                  <span>Subject: {form.subject}</span><span>Grade: {form.grade}</span><span>Duration: {form.duration} min</span>
                 </div>
                 <div className="markdown-content">
                   {result.split(/(```mermaid[\s\S]*?```)/).map((part, i) => {

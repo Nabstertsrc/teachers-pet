@@ -26,7 +26,7 @@ export default function VoiceBar({ collapsed }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+      <div className="hide-mobile" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
         <div className="badge badge-primary" style={{ fontSize: '0.72rem' }}>
           🎙️ Voice Active
         </div>

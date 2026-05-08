@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getLessons, getQuestionPapers, getTodos, getAnnualPlans, getSettings } from '../lib/storage'
+import { getLessons, getQuestionPapers, getTodos, getAnnualPlans, getSettings, getSchoolProfile, saveSchoolProfile } from '../lib/storage'
 import { generateMotivationalQuote } from '../lib/gemini'
 
 const QUICK_ACTIONS = [
@@ -23,23 +23,27 @@ export default function Dashboard() {
   const [todos, setTodos] = useState([])
   const [plans, setPlans] = useState([])
   const [settings, setSettings] = useState({})
+  const [school, setSchool] = useState(null)
+  const [showSchoolForm, setShowSchoolForm] = useState(false)
   const pendingTodos = todos.filter(t => !t.completed)
   const now = new Date()
 
   useEffect(() => {
     const load = async () => {
-      const [l, p, t, pl, s] = await Promise.all([
+      const [l, p, t, pl, s, sch] = await Promise.all([
         getLessons(),
         getQuestionPapers(),
         getTodos(),
         getAnnualPlans(),
-        getSettings()
+        getSettings(),
+        getSchoolProfile()
       ])
       setLessons(l)
       setPapers(p)
       setTodos(t)
       setPlans(pl)
       setSettings(s)
+      setSchool(sch)
     }
     load()
   }, [])
@@ -103,7 +107,81 @@ export default function Dashboard() {
       </div>
 
       {/* Recent & Todo */}
-      <div className="grid-2">
+      <div className="grid-2" style={{ marginBottom: 32 }}>
+        {/* School Profile Card */}
+        <div className="card school-card" style={{ gridColumn: 'span 2' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {school?.logo ? <img src={school.logo} alt="Logo" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'contain', background: '#f5f5f5' }} /> : <div className="qa-icon">🏫</div>}
+              <div>
+                <h3 style={{ margin: 0 }}>{school?.name || 'School Profile'}</h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>{school?.name ? 'Registered & active on official docs' : 'Not registered yet'}</p>
+              </div>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={() => setShowSchoolForm(!showSchoolForm)}>
+              {showSchoolForm ? 'Close' : school?.name ? 'Edit Profile' : 'Register School'}
+            </button>
+          </div>
+
+          {showSchoolForm && (
+            <div className="school-form animate-slide-down">
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>School Name</label>
+                  <input type="text" className="form-control" value={school?.name || ''} onChange={e => setSchool({...school, name: e.target.value})} placeholder="e.g. Westview High" />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input type="email" className="form-control" value={school?.email || ''} onChange={e => setSchool({...school, email: e.target.value})} placeholder="school@example.com" />
+                </div>
+                <div className="form-group">
+                  <label>Physical Address</label>
+                  <input type="text" className="form-control" value={school?.address || ''} onChange={e => setSchool({...school, address: e.target.value})} placeholder="123 Education Way" />
+                </div>
+                <div className="form-group">
+                  <label>Phone Number</label>
+                  <input type="text" className="form-control" value={school?.phone || ''} onChange={e => setSchool({...school, phone: e.target.value})} placeholder="+27 12 345 6789" />
+                </div>
+                <div className="form-group">
+                  <label>School Logo / Letterhead Banner</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 8 }}>Tip: Upload a full-width image (approx. 1200x250px) to use as an official letterhead.</p>
+                  <input type="file" accept="image/*" className="form-control" onChange={e => {
+                    const file = e.target.files[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onloadend = () => setSchool({...school, logo: reader.result})
+                      reader.readAsDataURL(file)
+                    }
+                  }} />
+                </div>
+                <div className="form-group">
+                  <label>Class Register (Students List)</label>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 8 }}>Upload a .txt or .csv with one student name per line.</p>
+                  <input type="file" accept=".csv,.txt" className="form-control" onChange={e => {
+                    const file = e.target.files[0]
+                    if (file) {
+                      const reader = new FileReader()
+                      reader.onload = (ev) => {
+                        const register = ev.target.result.split('\n').filter(l => l.trim()).map(l => ({ name: l.trim(), id: Math.random().toString(36).substr(2, 9) }))
+                        setSchool({...school, register})
+                        alert(`Imported ${register.length} students!`)
+                      }
+                      reader.readAsText(file)
+                    }
+                  }} />
+                </div>
+              </div>
+              <div style={{ marginTop: 20, display: 'flex', gap: 12 }}>
+                <button className="btn btn-primary" onClick={async () => {
+                  await saveSchoolProfile(school)
+                  setShowSchoolForm(false)
+                }}>Save Changes</button>
+                {school?.register?.length > 0 && <span className="badge badge-success" style={{ alignSelf: 'center' }}>{school.register.length} Students Loaded</span>}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Recent Lessons */}
         <div className="card">
           <h3 style={{ marginBottom: 16 }}>📚 Recent Lessons</h3>

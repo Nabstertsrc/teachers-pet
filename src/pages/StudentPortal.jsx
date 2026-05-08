@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { generateStudyGuide, generateFlashcards } from '../lib/gemini'
 import { getStudentNotes, saveStudentNote, getLessons } from '../lib/storage'
 import { useToast } from '../context/AppContext'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const SUBJECTS = ['Mathematics','English','Afrikaans','Natural Sciences','Life Sciences','Physical Sciences','Geography','History','Life Orientation','Technology','Economics','Business Studies','Accounting','Other']
 const GRADES = ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9','Grade 10','Grade 11','Grade 12']
 
 export default function StudentPortal() {
   const toast = useToast()
-  const lessons = getLessons()
+  const [lessons, setLessons] = useState([])
   const [tab, setTab] = useState('notes')
-  const [notes, setNotes] = useState(getStudentNotes)
+  const [notes, setNotes] = useState([])
   const [form, setForm] = useState({ subject:'', grade:'', topic:'', lessonId:'' })
   const [generating, setGenerating] = useState(false)
   const [studyGuide, setStudyGuide] = useState('')
@@ -19,7 +21,17 @@ export default function StudentPortal() {
   const [flipped, setFlipped] = useState(false)
   const [fcForm, setFcForm] = useState({ subject:'', grade:'', topic:'', count:10 })
   const [generatingFC, setGeneratingFC] = useState(false)
+  
   const set = (k,v) => setForm(f=>({...f,[k]:v}))
+
+  useEffect(() => {
+    const load = async () => {
+      const [l, n] = await Promise.all([getLessons(), getStudentNotes()])
+      setLessons(l)
+      setNotes(n)
+    }
+    load()
+  }, [])
 
   const handleGenerateGuide = async () => {
     if (!form.subject || !form.topic) { toast('Select subject and topic', 'warning'); return }
@@ -28,8 +40,10 @@ export default function StudentPortal() {
       const selectedLesson = lessons.find(l => l.id === form.lessonId)
       const guide = await generateStudyGuide({ ...form, lessonContent: selectedLesson?.content || '' })
       setStudyGuide(guide)
-      const note = saveStudentNote({ subject: form.subject, grade: form.grade, topic: form.topic, content: guide })
-      setNotes(getStudentNotes()); toast('Study guide generated!', 'success')
+      await saveStudentNote({ subject: form.subject, grade: form.grade, topic: form.topic, content: guide })
+      const updatedNotes = await getStudentNotes()
+      setNotes(updatedNotes)
+      toast('Study guide generated!', 'success')
     } catch { toast('Generation failed', 'error') }
     finally { setGenerating(false) }
   }
@@ -100,25 +114,31 @@ export default function StudentPortal() {
           </div>
 
           <div>
-            {!studyGuide && !generating && notes.length > 0 && (
+            {!studyGuide && !generating && (
               <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                <h3>📚 Previous Study Guides</h3>
-                {notes.slice(0,4).map(n=>(
-                  <div key={n.id} className="card" style={{ cursor:'pointer', padding:'14px 18px' }} onClick={()=>setStudyGuide(n.content)}>
-                    <div style={{ fontWeight:600, fontSize:'0.9rem' }}>{n.topic}</div>
-                    <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', marginTop:4 }}>{n.subject} · {n.grade} · {new Date(n.createdAt).toLocaleDateString()}</div>
-                  </div>
-                ))}
+                <h3>📚 Recent Study Guides</h3>
+                {notes.length === 0 ? (
+                   <div className="card-glass" style={{ padding:20, textAlign:'center', color:'var(--text-muted)' }}>No saved guides yet</div>
+                ) : (
+                  notes.slice(0,5).map(n=>(
+                    <div key={n.id} className="card" style={{ cursor:'pointer', padding:'14px 18px' }} onClick={()=>setStudyGuide(n.content)}>
+                      <div style={{ fontWeight:600, fontSize:'0.9rem' }}>{n.topic}</div>
+                      <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', marginTop:4 }}>{n.subject} · {n.grade} · {new Date(n.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
             {generating && <div className="loading-overlay"><div className="spinner"/><p className="loading-text">Creating your study guide…</p></div>}
             {studyGuide && (
-              <div className="card" style={{ maxWidth:700 }}>
+              <div className="card animate-slide-up" style={{ maxWidth:700 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
-                  <h3>📖 Study Guide</h3>
-                  <button className="btn btn-ghost btn-sm" onClick={()=>setStudyGuide('')}>✕</button>
+                  <h3 style={{ color: 'var(--primary-light)' }}>📖 Study Guide</h3>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>setStudyGuide('')}>✕ Close</button>
                 </div>
-                <div style={{ whiteSpace:'pre-wrap', lineHeight:1.8, fontSize:'0.9rem', color:'var(--text)' }}>{studyGuide}</div>
+                <div className="markdown-content">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{studyGuide}</ReactMarkdown>
+                </div>
               </div>
             )}
           </div>

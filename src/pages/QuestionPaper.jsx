@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { generateQuestions } from '../lib/gemini'
-import { saveQuestionPaper, getQuestionPapers, deleteQuestionPaper, getSettings } from '../lib/storage'
+import { saveQuestionPaper, getQuestionPapers, deleteQuestionPaper, getSettings, getSchoolProfile } from '../lib/storage'
 import { exportToDocx, exportToPDF } from '../lib/export'
 import { useToast } from '../context/AppContext'
 import ReactMarkdown from 'react-markdown'
@@ -37,14 +37,15 @@ export default function QuestionPaper() {
   const [tab, setTab] = useState('build')
   const [papers, setPapers] = useState([])
   const [diagrams, setDiagrams] = useState([])
+  const [school, setSchool] = useState(null)
 
   // Load initial data
   useEffect(() => {
     const load = async () => {
-      const s = await getSettings()
+      const [s, p, sch] = await Promise.all([getSettings(), getQuestionPapers(), getSchoolProfile()])
       setSettings(s)
-      const p = await getQuestionPapers()
       setPapers(p)
+      setSchool(sch)
     }
     load()
   }, [])
@@ -87,7 +88,7 @@ export default function QuestionPaper() {
   }
 
   const handleExportDocx = () => {
-    exportToDocx({ title: `${form.examType}: ${form.subject} — ${form.topic}`, content: result, filename: `QP_${form.subject}_${form.grade}`.replace(/\s/g,'_'), schoolName: settings.schoolName, subject: form.subject, grade: form.grade })
+    exportToDocx({ title: `${form.examType}: ${form.subject} — ${form.topic}`, content: result, filename: `QP_${form.subject}_${form.grade}`.replace(/\s/g,'_'), school, subject: form.subject, grade: form.grade })
     toast('Exported to Word!', 'success')
   }
 
@@ -191,18 +192,32 @@ export default function QuestionPaper() {
                 <button className="btn btn-success" onClick={handleSave}>💾 Save</button>
                 <button className="btn btn-primary" onClick={handleExportDocx}>📄 Export Word</button>
                 <button className="btn btn-secondary" onClick={()=>exportToPDF('qp-preview',`QP_${form.subject}_${form.grade}`)}>📑 Export PDF</button>
+                <button className="btn btn-ghost" onClick={()=>exportToPDF('qp-preview',`QP_${form.subject}_${form.grade}`, 0.5)}>🗜️ Compressed PDF</button>
                 <button className="btn btn-ghost" onClick={()=>setTab('build')}>✏️ Edit</button>
               </div>
               <div id="qp-preview" className="card" style={{ maxWidth:900, padding: 40 }}>
                 <div style={{ textAlign:'center', borderBottom:'2px solid var(--border-light)', paddingBottom:20, marginBottom:20 }}>
-                  <h2 style={{ fontSize:'1rem', fontWeight:700 }}>{settings.schoolName?.toUpperCase()}</h2>
-                  <h1 style={{ fontSize:'1.3rem', margin:'8px 0', color:'var(--primary)' }}>{form.subject?.toUpperCase()} — {form.examType?.toUpperCase()}</h1>
-                  <div style={{ display:'flex', justifyContent:'center', gap:24, fontSize:'0.88rem', color:'var(--text-secondary)', marginTop:8 }}>
-                    <span>Grade: {form.grade}</span><span>Total: {form.totalMarks} marks</span><span>Time: {form.timeAllowed}</span>
+                  {school?.logo && (
+                    <div style={{ width: '100%', height: '180px', marginBottom: 20, overflow: 'hidden', borderRadius: 'var(--radius)' }}>
+                      <img src={school.logo} alt="School Letterhead" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} />
+                    </div>
+                  )}
+                  <div style={{ padding: '0 20px' }}>
+                    <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>{school?.name?.toUpperCase() || settings.schoolName?.toUpperCase()}</h2>
+                    {school?.address && <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:'4px 0' }}>{school.address}</p>}
+                    {(school?.phone || school?.email) && (
+                      <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:0 }}>
+                        {school.phone && `Tel: ${school.phone}`} {school.email && ` | ${school.email}`}
+                      </p>
+                    )}
                   </div>
-                  <div style={{ marginTop:12, padding:'10px', background:'var(--bg-surface)', borderRadius:'var(--radius)', fontSize:'0.82rem', textAlign:'left' }}>
-                    <strong>Topic:</strong> {form.topic}
-                  </div>
+                </div>
+                <h1 style={{ fontSize:'1.3rem', margin:'12px 0', color:'var(--primary)', borderTop:'1px solid var(--border-light)', paddingTop:12 }}>{form.subject?.toUpperCase()} — {form.examType?.toUpperCase()}</h1>
+                <div style={{ display:'flex', justifyContent:'center', gap:24, fontSize:'0.88rem', color:'var(--text-secondary)', marginTop:8 }}>
+                  <span>Grade: {form.grade}</span><span>Total: {form.totalMarks} marks</span><span>Time: {form.timeAllowed}</span>
+                </div>
+                <div style={{ marginTop:12, padding:'10px', background:'var(--bg-surface)', borderRadius:'var(--radius)', fontSize:'0.82rem', textAlign:'left' }}>
+                  <strong>Topic:</strong> {form.topic}
                 </div>
                 {diagrams.length > 0 && (
                   <div style={{ marginBottom:20, display:'flex', gap:12, flexWrap:'wrap' }}>

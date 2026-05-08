@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getSettings, saveSettings } from '../lib/storage'
 import { useToast, useApp } from '../context/AppContext'
 
@@ -147,6 +147,43 @@ export default function Settings() {
           .theme-preview::after { content: ''; position: absolute; top: 10px; left: 10px; width: 60%; height: 4px; background: var(--theme-color); border-radius: 2px; }
           .theme-btn span { font-size: 0.8rem; font-weight: 600; color: var(--text); }
         `}</style>
+
+        {/* Privacy & Security Center */}
+        <div className="card">
+          <h3 style={{ marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>🛡️ Privacy & Security Center</h3>
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px', background:'var(--bg-surface)', borderRadius:'var(--radius)' }}>
+              <div>
+                <div style={{ fontWeight:600, fontSize:'0.9rem' }}>Environment Secrets</div>
+                <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>Status of keys in your .env file</div>
+              </div>
+              <div className="badge badge-success" style={{ fontSize:'0.7rem' }}>
+                {import.meta.env.VITE_GEMINI_API_KEY ? '✅ .env Loaded' : '⚠️ Using Local Only'}
+              </div>
+            </div>
+            
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px', background:'var(--bg-surface)', borderRadius:'var(--radius)' }}>
+              <div>
+                <div style={{ fontWeight:600, fontSize:'0.9rem' }}>Data Residence</div>
+                <div style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>Where your information is stored</div>
+              </div>
+              <div className="badge badge-secondary" style={{ fontSize:'0.7rem' }}>📍 Device Local</div>
+            </div>
+
+            <div className="alert-info" style={{ padding: 12, borderRadius: 8, background: 'rgba(0, 120, 212, 0.05)', border: '1px solid rgba(0, 120, 212, 0.1)' }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+                🔒 <strong>Privacy First:</strong> This application is "Offline-First". Your lesson plans, student names, and grades are stored <strong>only</strong> in your browser's local database (IndexedDB) and are never synced to a cloud server.
+              </p>
+            </div>
+            
+            <button className="btn btn-ghost btn-sm" onClick={() => {
+              if (window.confirm('Wipe only the API keys from local storage? System defaults will be used.')) {
+                set('geminiKey', ''); set('deepseekKey', '');
+                toast('API keys cleared from local storage', 'info')
+              }
+            }}>🧹 Wipe Local API Keys</button>
+          </div>
+        </div>
 
         {/* Voice Commands Help */}
         <div className="card">

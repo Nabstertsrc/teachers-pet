@@ -54,3 +54,15 @@
 .nav-label { overflow: hidden; text-overflow: ellipsis; }
 
 .sidebar-footer { padding: 12px 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 2px; }
+
+.nav-section { margin-top: 16px; }
+.nav-section-title {
+  padding: 0 16px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.text-danger { color: var(--accent) !important; }

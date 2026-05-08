@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { generateAnnualPlan } from '../lib/gemini'
-import { saveAnnualPlan, getAnnualPlans, deleteAnnualPlan, getSettings } from '../lib/storage'
+import { saveAnnualPlan, getAnnualPlans, deleteAnnualPlan, getSettings, getSchoolProfile } from '../lib/storage'
 import { exportToDocx } from '../lib/export'
 import { useToast } from '../context/AppContext'
 import ReactMarkdown from 'react-markdown'
@@ -55,6 +55,7 @@ export default function AnnualPlan() {
   const toast = useToast()
   const [plans, setPlans] = useState([])
   const [settings, setSettings] = useState({})
+  const [school, setSchool] = useState(null)
   const [form, setForm] = useState({ subject: '', grade: '', terms: '4', weeksPerTerm: '10', curriculum: 'CAPS (South Africa)' })
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState('')
@@ -62,10 +63,10 @@ export default function AnnualPlan() {
 
   useEffect(() => {
     const load = async () => {
-      const s = await getSettings()
+      const [s, p, sch] = await Promise.all([getSettings(), getAnnualPlans(), getSchoolProfile()])
       setSettings(s)
-      const p = await getAnnualPlans()
       setPlans(p)
+      setSchool(sch)
     }
     load()
   }, [])
@@ -89,7 +90,7 @@ export default function AnnualPlan() {
   }
 
   const handleExport = () => {
-    exportToDocx({ title: `Annual Teaching Plan — ${form.subject} ${form.grade}`, content: result, filename: `Annual_Plan_${form.subject}_${form.grade}`.replace(/\s/g,'_'), schoolName: settings.schoolName, subject: form.subject, grade: form.grade })
+    exportToDocx({ title: `Annual Teaching Plan — ${form.subject} ${form.grade}`, content: result, filename: `Annual_Plan_${form.subject}_${form.grade}`.replace(/\s/g,'_'), school, subject: form.subject, grade: form.grade })
     toast('Exported to Word!', 'success')
   }
 
@@ -188,10 +189,26 @@ export default function AnnualPlan() {
                 <button className="btn btn-primary" onClick={handleExport}>📄 Export Word</button>
                 <button className="btn btn-ghost" onClick={()=>setTab('generate')}>✏️ Edit</button>
               </div>
-              <div className="card" style={{ maxWidth:1000 }}>
-                <div style={{ background:'var(--primary)', margin:'-24px -24px 24px', padding:'24px', borderRadius:'var(--radius-lg) var(--radius-lg) 0 0' }}>
-                  <h2 style={{ color:'#fff' }}>Annual Teaching Plan Draft</h2>
-                  <div style={{ color:'rgba(255,255,255,0.8)', fontSize:'0.88rem', marginTop:6 }}>{form.subject} · {form.grade} · {form.curriculum}</div>
+              <div id="atp-preview" className="card" style={{ maxWidth:1000, padding:40 }}>
+                <div style={{ textAlign:'center', borderBottom:'2px solid var(--border-light)', paddingBottom:20, marginBottom:20 }}>
+                  {school?.logo && (
+                    <div style={{ width: '100%', height: '220px', marginBottom: 20, overflow: 'hidden', borderRadius: 'var(--radius)' }}>
+                      <img src={school.logo} alt="School Letterhead" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} />
+                    </div>
+                  )}
+                  <div style={{ padding: '0 20px' }}>
+                    <h2 style={{ fontSize:'1.1rem', fontWeight:700, margin:0 }}>{school?.name?.toUpperCase() || settings.schoolName?.toUpperCase()}</h2>
+                    {school?.address && <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:'4px 0' }}>{school.address}</p>}
+                    {(school?.phone || school?.email) && (
+                      <p style={{ fontSize:'0.75rem', color:'var(--text-muted)', margin:0 }}>
+                        {school.phone && `Tel: ${school.phone}`} {school.email && ` | ${school.email}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <h1 style={{ fontSize:'1.4rem', margin:'12px 0', color:'var(--primary)', borderTop:'1px solid var(--border-light)', paddingTop:12 }}>ANNUAL TEACHING PLAN</h1>
+                <div style={{ display:'flex', justifyContent:'center', gap:24, fontSize:'0.88rem', color:'var(--text-secondary)', marginTop:8 }}>
+                  <span>Subject: {form.subject}</span><span>Grade: {form.grade}</span><span>Curriculum: {form.curriculum}</span>
                 </div>
                 <div className="markdown-content" style={{ padding: '0 10px' }}>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>

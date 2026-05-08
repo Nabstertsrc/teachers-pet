@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { generateReportComment } from '../lib/gemini'
-import { getGradebook } from '../lib/storage'
+import { getGradebook, getSchoolProfile, getSettings } from '../lib/storage'
 import { exportToDocx } from '../lib/export'
 import { useToast } from '../context/AppContext'
 import ReactMarkdown from 'react-markdown'
@@ -15,11 +15,15 @@ export default function ReportCard() {
   const [form, setForm] = useState({ performance:'', personality:'', length:'medium' })
   const [generating, setGenerating] = useState(false)
   const [comment, setComment] = useState('')
+  const [school, setSchool] = useState(null)
+  const [settings, setSettings] = useState({})
 
   useEffect(() => {
     const load = async () => {
-      const data = await getGradebook()
+      const [data, sch, s] = await Promise.all([getGradebook(), getSchoolProfile(), getSettings()])
       setGb(data)
+      setSchool(sch)
+      setSettings(s)
       if (data.classes?.length > 0) setActiveClass(data.classes[0].id)
     }
     load()
@@ -90,15 +94,29 @@ export default function ReportCard() {
         <div>
           {generating && <div className="loading-overlay"><div className="spinner"/><p className="loading-text">Crafting the perfect comment...</p></div>}
           {comment && (
-            <div className="card animate-slide-up">
-              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:16 }}>
+            <div className="card animate-slide-up" style={{ padding: 40 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:20 }}>
                 <h3>Draft Comment</h3>
-                <button className="btn btn-secondary btn-sm" onClick={() => exportToDocx({ title:'Report Comment', content:comment, filename:'Report_Comment' })}>📥 Word</button>
+                <div style={{ display:'flex', gap:8 }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => exportToDocx({ title:'Report Comment', content:comment, filename:'Report_Comment', school })}>📥 Word</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setComment('')}>🗑️ Clear</button>
+                </div>
               </div>
-              <div className="markdown-content" style={{ padding:16, background:'var(--bg-surface)', borderRadius:'var(--radius)', border:'1px solid var(--border)' }}>
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment}</ReactMarkdown>
+              <div id="report-preview" style={{ padding: 20, border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                <div style={{ textAlign:'center', borderBottom:'1px solid var(--border-light)', paddingBottom:16, marginBottom:16 }}>
+                  {school?.logo && (
+                    <div style={{ width: '100%', height: '160px', marginBottom: 16, overflow: 'hidden', borderRadius: 'var(--radius-sm)' }}>
+                      <img src={school.logo} alt="School Letterhead" style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fff' }} />
+                    </div>
+                  )}
+                  <h4 style={{ margin:0, fontSize:'0.95rem', fontWeight:700 }}>{school?.name?.toUpperCase() || settings.schoolName?.toUpperCase()}</h4>
+                  <p style={{ margin:'4px 0 0', fontSize:'0.75rem', color:'var(--text-muted)' }}>Official Progress Report Comment</p>
+                </div>
+                <div className="markdown-content" style={{ fontSize:'0.9rem' }}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{comment}</ReactMarkdown>
+                </div>
               </div>
-              <p style={{ marginTop:14, fontSize:'0.78rem', color:'var(--text-muted)' }}>💡 Pro-tip: You can edit this directly in Word after exporting.</p>
+              <p style={{ marginTop:14, fontSize:'0.78rem', color:'var(--text-muted)' }}>💡 Pro-tip: You can export this to Word to include the full letterhead.</p>
             </div>
           )}
           {!comment && !generating && (
