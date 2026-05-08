@@ -7,6 +7,13 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 
+const FORMULAS = {
+  square: String.raw`$A = s^2$`,
+  circle: String.raw`$A = \pi r^2$`,
+  triangle: String.raw`$A = \frac{1}{2} b h$`,
+  quadratic: String.raw`$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$`
+}
+
 export default function MathsLab() {
   const toast = useToast()
   const [tab, setTab] = useState('solve')
@@ -127,13 +134,13 @@ export default function MathsLab() {
               <div className="space-y-4">
                   <div className="card-glass" style={{ padding: 12 }}>
                     <div style={{ fontWeight: 600 }}>Geometry (Area)</div>
-                    <div style={{ fontSize: '0.9rem' }}>Square: $A = s^2$</div>
-                    <div style={{ fontSize: '0.9rem' }}>Circle: $A = \\pi r^2$</div>
-                    <div style={{ fontSize: '0.9rem' }}>Triangle: $A = \\frac{1}{2} b h$</div>
+                    <div style={{ fontSize: '0.9rem' }}>Square: {FORMULAS.square}</div>
+                    <div style={{ fontSize: '0.9rem' }}>Circle: {FORMULAS.circle}</div>
+                    <div style={{ fontSize: '0.9rem' }}>Triangle: {FORMULAS.triangle}</div>
                   </div>
                   <div className="card-glass" style={{ padding: 12 }}>
                     <div style={{ fontWeight: 600 }}>Algebra</div>
-                    <div style={{ fontSize: '0.9rem' }}>Quadratic: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$</div>
+                    <div style={{ fontSize: '0.9rem' }}>Quadratic: {FORMULAS.quadratic}</div>
                   </div>
                 <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => handleLearn('Essential Formulas')}>Generate Custom Formula Sheet</button>
               </div>
