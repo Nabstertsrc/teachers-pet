@@ -125,16 +125,16 @@ export default function MathsLab() {
             <div className="card">
               <h3>🧪 Formula Generator</h3>
               <div className="space-y-4">
-                <div className="card-glass" style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 600 }}>Geometry (Area)</div>
-                  <div style={{ fontSize: '0.9rem' }}>Square: $A = s^2$</div>
-                  <div style={{ fontSize: '0.9rem' }}>Circle: $A = \pi r^2$</div>
-                  <div style={{ fontSize: '0.9rem' }}>Triangle: $A = \frac{1}{2} b h$</div>
-                </div>
-                <div className="card-glass" style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 600 }}>Algebra</div>
-                  <div style={{ fontSize: '0.9rem' }}>Quadratic: $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$</div>
-                </div>
+                  <div className="card-glass" style={{ padding: 12 }}>
+                    <div style={{ fontWeight: 600 }}>Geometry (Area)</div>
+                    <div style={{ fontSize: '0.9rem' }}>Square: $A = s^2$</div>
+                    <div style={{ fontSize: '0.9rem' }}>Circle: $A = \\pi r^2$</div>
+                    <div style={{ fontSize: '0.9rem' }}>Triangle: $A = \\frac{1}{2} b h$</div>
+                  </div>
+                  <div className="card-glass" style={{ padding: 12 }}>
+                    <div style={{ fontWeight: 600 }}>Algebra</div>
+                    <div style={{ fontSize: '0.9rem' }}>Quadratic: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$</div>
+                  </div>
                 <button className="btn btn-secondary btn-sm" style={{ width: '100%' }} onClick={() => handleLearn('Essential Formulas')}>Generate Custom Formula Sheet</button>
               </div>
             </div>
