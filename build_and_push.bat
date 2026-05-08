@@ -10,8 +10,9 @@ echo [2/3] Building the production application...
 call npm run build
 
 echo.
-echo [3/3] Pushing changes to GitHub...
-git add .
+echo [3/3] Checking Git status and pushing...
+git status
+git add --all
 git commit -m "Add Career Tools, University Hub, and PDF optimization"
 git push origin main
 
