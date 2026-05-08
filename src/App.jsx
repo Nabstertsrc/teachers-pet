@@ -22,7 +22,9 @@ import Settings from './pages/Settings'
 import Professionalism from './pages/Professionalism'
 import CareerTools from './pages/CareerTools'
 import StudentDashboard from './pages/student/StudentDashboard'
-import StudyLab from './pages/student/StudyLab'
+import IPTPortfolio from './pages/IPTPortfolio'
+import AcademicCoach from './pages/AcademicCoach'
+import ClassroomIdeas from './pages/ClassroomIdeas'
 import Assignments from './pages/student/Assignments'
 import LearningPath from './pages/student/LearningPath'
 import AutoOrganizer from './pages/student/AutoOrganizer'
@@ -68,10 +70,12 @@ function AppShell() {
           <Route path="/report-card" element={<ReportCard />} />
           <Route path="/professionalism" element={<Professionalism />} />
           <Route path="/career-tools" element={<CareerTools />} />
+          <Route path="/ipt-portfolio" element={<IPTPortfolio />} />
+          <Route path="/academic-coach" element={<AcademicCoach />} />
+          <Route path="/classroom-ideas" element={<ClassroomIdeas />} />
           
           {/* Student Section */}
           <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/study-lab" element={<StudyLab />} />
           <Route path="/assignments" element={<Assignments />} />
           <Route path="/learning-path" element={<LearningPath />} />
           <Route path="/auto-organizer" element={<AutoOrganizer />} />

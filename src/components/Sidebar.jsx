@@ -1,57 +1,113 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import './Sidebar.css'
 
-const TEACHER_NAV = [
-  { path: '/lessons', label: 'Lesson Generator', icon: '📚' },
-  { path: '/annual-plan', label: 'Annual Plan', icon: '📅' },
-  { path: '/question-paper', label: 'Question Papers', icon: '📝' },
-  { path: '/timetable', label: 'Timetable', icon: '🗓️' },
-  { path: '/gradebook', label: 'Gradebook', icon: '📊' },
-  { path: '/attendance', label: 'Attendance', icon: '📝' },
-  { path: '/rubric', label: 'Rubrics', icon: '📏' },
-  { path: '/report-card', label: 'Report Cards', icon: '📜' },
-  { path: '/professionalism', label: 'QMS & Intervention', icon: '🛡️' },
-  { path: '/career-tools', label: 'Career Tools', icon: '🚀' },
-  { path: '/opportunities', label: 'Career Hub', icon: '🌍' },
-]
-
-const STUDENT_NAV = [
-  { path: '/student', label: 'Student Dashboard', icon: '🎓' },
-  { path: '/study-lab', label: 'AI Study Lab', icon: '🔬' },
-  { path: '/auto-organizer', label: 'Auto-Organizer', icon: '📂' },
-  { path: '/assignments', label: 'Assignments', icon: '📋' },
-  { path: '/learning-path', label: 'Learning Path', icon: '🗺️' },
-  { path: '/achievements', label: 'Achievements', icon: '🏆' },
-  { path: '/opportunities', label: 'Opportunities', icon: '🌍' },
-  { path: '/institutions', label: 'Universities', icon: '🏛️' },
-]
-
-const SHARED_NAV = [
-  { path: '/resources', label: 'Resources', icon: '📖' },
-  { path: '/todo', label: 'To-Do List', icon: '✅' },
-  { path: '/parent-comm', label: 'Parent Comm', icon: '📧' },
+const NAV_STRUCTURE = [
+  {
+    title: 'LESSON PREP',
+    icon: '📂',
+    items: [
+      { path: '/lessons', label: 'Lesson Generator', icon: '📚' },
+      { path: '/classroom-ideas', label: 'Classroom Ideas', icon: '💡' },
+      { path: '/annual-plan', label: 'Annual Teaching Plan', icon: '📅' },
+    ]
+  },
+  {
+    title: 'ASSESSMENTS',
+    icon: '📂',
+    items: [
+      { path: '/question-paper', label: 'Question Papers', icon: '📝' },
+      { path: '/rubric', label: 'Rubric Builder', icon: '📏' },
+    ]
+  },
+  {
+    title: 'ADMINISTRATION',
+    icon: '📂',
+    items: [
+      { path: '/gradebook', label: 'Gradebook', icon: '📊' },
+      { path: '/attendance', label: 'Attendance', icon: '📝' },
+      { path: '/timetable', label: 'Timetable', icon: '🗓️' },
+      { path: '/report-card', label: 'Report Cards', icon: '📜' },
+    ]
+  },
+  {
+    title: 'PROFESSIONAL',
+    icon: '📂',
+    items: [
+      { path: '/professionalism', label: 'QMS & Intervention', icon: '🛡️' },
+      { path: '/ipt-portfolio', label: 'IPT Portfolio', icon: '📘' },
+      { path: '/academic-coach', label: 'Academic Coach', icon: '🎓' },
+      { path: '/career-tools', label: 'Career Tools', icon: '🚀' },
+      { path: '/opportunities', label: 'Career Hub', icon: '🌍' },
+    ]
+  },
+  {
+    title: 'STUDENT HUB',
+    icon: '📂',
+    items: [
+      { path: '/student', label: 'Dashboard', icon: '🏠' },
+      { path: '/auto-organizer', label: 'Auto-Organizer', icon: '📂' },
+      { path: '/assignments', label: 'Assignments', icon: '📋' },
+      { path: '/learning-path', label: 'Learning Path', icon: '🗺️' },
+      { path: '/achievements', label: 'Achievements', icon: '🏆' },
+      { path: '/institutions', label: 'Universities', icon: '🏛️' },
+    ]
+  },
+  {
+    title: 'TOOLS',
+    icon: '📂',
+    items: [
+      { path: '/resources', label: 'Resources', icon: '📖' },
+      { path: '/todo', label: 'To-Do List', icon: '✅' },
+      { path: '/parent-comm', label: 'Parent Comm', icon: '📧' },
+    ]
+  }
 ]
 
 export default function Sidebar() {
   const { sidebarCollapsed, setSidebarCollapsed, setAiPanelOpen, mobileMenuOpen } = useApp()
+  const [openFolders, setOpenFolders] = useState(['LESSON PREP', 'STUDENT HUB'])
 
-  const renderNavSection = (items, title) => (
-    <div className="nav-section">
-      {!sidebarCollapsed && <div className="nav-section-title">{title}</div>}
-      {items.map(item => (
-        <NavLink
-          key={item.path}
-          to={item.path}
-          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-          title={item.label}
+  const toggleFolder = (title) => {
+    setOpenFolders(prev => 
+      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
+    )
+  }
+
+  const renderNavSection = (section) => {
+    const isOpen = openFolders.includes(section.title)
+    
+    return (
+      <div key={section.title} className="nav-folder">
+        <div 
+          className={`nav-folder-header ${isOpen ? 'open' : ''}`} 
+          onClick={() => toggleFolder(section.title)}
+          title={section.title}
         >
-          <span className="nav-icon">{item.icon}</span>
-          {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
-        </NavLink>
-      ))}
-    </div>
-  )
+          <span className="nav-icon">{isOpen ? '📂' : '📁'}</span>
+          {!sidebarCollapsed && <span className="nav-label">{section.title}</span>}
+          {!sidebarCollapsed && <span className="folder-arrow">{isOpen ? '▾' : '▸'}</span>}
+        </div>
+        
+        {isOpen && (
+          <div className="nav-folder-content">
+            {section.items.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `nav-item sub-item ${isActive ? 'active' : ''}`}
+                title={item.label}
+              >
+                <span className="nav-icon">{item.icon}</span>
+                {!sidebarCollapsed && <span className="nav-label">{item.label}</span>}
+              </NavLink>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
@@ -71,9 +127,7 @@ export default function Sidebar() {
           {!sidebarCollapsed && <span className="nav-label">Home</span>}
         </NavLink>
 
-        {renderNavSection(TEACHER_NAV, 'FOR TEACHERS')}
-        {renderNavSection(STUDENT_NAV, 'FOR STUDENTS')}
-        {renderNavSection(SHARED_NAV, 'TOOLS')}
+        {NAV_STRUCTURE.map(renderNavSection)}
       </nav>
 
       <div className="sidebar-footer">
