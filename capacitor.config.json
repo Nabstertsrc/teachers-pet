@@ -1,6 +1,5 @@
 {
   "appId": "com.teacherspet.app",
   "appName": "Teachers Pet",
-  "webDir": "dist",
-  "bundledWebRuntime": false
+  "webDir": "dist"
 }
