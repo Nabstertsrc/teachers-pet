@@ -58,7 +58,7 @@ export default function Sidebar() {
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <span className="logo-icon">🍎</span>
-          {!sidebarCollapsed && <span className="logo-text">Teacher's Pet</span>}
+          {!sidebarCollapsed && <span className="logo-text">Teacher's Pet <small style={{fontSize:'0.6rem', opacity:0.5}}>v1.1</small></span>}
         </div>
         <button className="collapse-btn" onClick={() => setSidebarCollapsed(c => !c)}>
           {sidebarCollapsed ? '›' : '‹'}
