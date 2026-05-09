@@ -1,0 +1,1 @@
+const e=async t=>t.type==="text/plain"||t.name.endsWith(".txt")||t.name.endsWith(".md")?await t.text():"PDF Content Extraction placeholder. Please use a .txt or .md file for now, or ensure pdfjs-dist is installed.";export{e};
