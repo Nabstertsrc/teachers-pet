@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../../context/AppContext'
 
@@ -7,6 +7,7 @@ const GRADE_COLORS = { R:'#f472b6','1':'#fb923c','2':'#facc15','3':'#a3e635','4'
 
 import { db } from '../../lib/db'
 import { generateLabContent } from '../../lib/gemini'
+import { getAdaptivePlan, recordAdaptiveResult } from '../../lib/adaptivePlanner'
 
 const GRAMMAR_Q = [
   { sentence: 'She ___ to school every day.', options: ['go', 'goes', 'going', 'gone'], answer: 'goes', rule: 'Subject-Verb Agreement' },
@@ -21,6 +22,25 @@ const WRITING_PROMPTS = [
   'A letter to your future self, 10 years from now.',
   'The strangest animal you could imagine — describe it!',
   'Write a short story that begins with: "The door opened by itself..."',
+]
+
+const LESSON_PASSAGES = [
+  {
+    title: 'Inference',
+    text: 'The hallway was wet, umbrellas dripped near the door, and everyone shook water from their jackets.',
+    question: 'What can you infer about the weather?',
+    answer: 'It is raining outside.',
+    options: ['It is snowing outside.', 'It is raining outside.', 'It is windy but dry.', 'It is very hot outside.'],
+    explain: 'Good readers combine clues (wet hallway + dripping umbrellas) to infer rain.'
+  },
+  {
+    title: 'Author Purpose',
+    text: 'Remember to wash your hands for 20 seconds before eating to reduce germs.',
+    question: 'What is the author mainly trying to do?',
+    answer: 'Inform and advise the reader.',
+    options: ['Entertain with a story.', 'Inform and advise the reader.', 'Describe a fictional place.', 'Persuade to buy a product.'],
+    explain: 'Instructional language ("remember to") signals informative/advisory purpose.'
+  }
 ]
 
 export default function EnglishLab() {
@@ -38,8 +58,15 @@ export default function EnglishLab() {
   const [wordCount, setWordCount] = useState(0)
   const [vocabWords, setVocabWords] = useState([])
   const [loading, setLoading] = useState(true)
+  const [lessonIndex, setLessonIndex] = useState(0)
+  const [lessonFeedback, setLessonFeedback] = useState('')
+  const [vocabDone, setVocabDone] = useState(false)
+  const [gramDone, setGramDone] = useState(false)
+  const [planTick, setPlanTick] = useState(0)
 
   const gc = GRADE_COLORS[grade]
+  const activeLesson = useMemo(() => LESSON_PASSAGES[lessonIndex % LESSON_PASSAGES.length], [lessonIndex])
+  const adaptivePlan = useMemo(() => getAdaptivePlan('english', grade), [grade, planTick])
 
   useEffect(() => {
     async function loadVocab() {
@@ -47,12 +74,14 @@ export default function EnglishLab() {
       try {
         const cached = await db.lab_content.where({ labType: 'english_vocab', grade }).first()
         if (cached && cached.content) {
-          setVocabWords(cached.content)
+          const deck = [...cached.content].slice(0, 12)
+          setVocabWords(deck)
         } else {
           toast('Generating new Vocabulary words...', 'info')
           const words = await generateLabContent('english_vocab', grade)
           if (words && words.length > 0) {
-            setVocabWords(words)
+            const deck = [...words].slice(0, 12)
+            setVocabWords(deck)
             await db.lab_content.add({
               labType: 'english_vocab',
               grade,
@@ -72,23 +101,40 @@ export default function EnglishLab() {
   }, [grade, toast])
 
   const checkVocab = (ans) => {
-    if (!vocabWords || vocabWords.length === 0) return;
+    if (!vocabWords || vocabWords.length === 0 || vocabDone) return;
     const correct = ans === vocabWords[vocabIdx].meaning
     setVocabFb(correct ? 'correct' : 'wrong')
     if (correct) setVocabScore(s => s + 10)
+    recordAdaptiveResult('english', grade, correct)
+    setPlanTick((v) => v + 1)
     setTimeout(() => {
       setVocabFb(null)
-      if (correct) setVocabIdx(i => (i + 1) % vocabWords.length)
+      if (correct) {
+        if (vocabIdx >= vocabWords.length - 1) {
+          setVocabDone(true)
+        } else {
+          setVocabIdx(i => i + 1)
+        }
+      }
     }, 1200)
   }
 
   const checkGram = (ans) => {
+    if (gramDone) return
     const correct = ans === GRAMMAR_Q[gramIdx].answer
     setGramFb(correct ? 'correct' : 'wrong')
     if (correct) setGramScore(s => s + 10)
+    recordAdaptiveResult('english', grade, correct)
+    setPlanTick((v) => v + 1)
     setTimeout(() => {
       setGramFb(null)
-      if (correct) setGramIdx(i => (i + 1) % GRAMMAR_Q.length)
+      if (correct) {
+        if (gramIdx >= GRAMMAR_Q.length - 1) {
+          setGramDone(true)
+        } else {
+          setGramIdx(i => i + 1)
+        }
+      }
     }, 1200)
   }
 
@@ -110,12 +156,16 @@ export default function EnglishLab() {
         <div className="lab-tabs">
           <button className={`nav-btn ${tab === 'vocab' ? 'active' : ''}`} onClick={() => setTab('vocab')}>📚 Vocabulary</button>
           <button className={`nav-btn ${tab === 'grammar' ? 'active' : ''}`} onClick={() => setTab('grammar')}>✏️ Grammar</button>
+          <button className={`nav-btn ${tab === 'lesson' ? 'active' : ''}`} onClick={() => setTab('lesson')}>🎬 Lesson Studio</button>
           <button className={`nav-btn ${tab === 'writing' ? 'active' : ''}`} onClick={() => setTab('writing')}>🖊️ Creative Writing</button>
         </div>
         <button className="btn btn-secondary btn-sm" onClick={() => window.history.back()}>Exit</button>
       </div>
 
       <div className="lab-main">
+        <div className="adaptive-banner">
+          Adaptive Plan: {adaptivePlan.level} | Mastery {adaptivePlan.mastery}% | {adaptivePlan.objective}
+        </div>
         {tab === 'vocab' && (
           <div className="game-center">
             {loading ? (
@@ -127,7 +177,7 @@ export default function EnglishLab() {
               <div className="game-card-lg">
                 <div className="gc-top"><h3>📚 Word Power</h3><span className="pill">🍎 {vocabScore}</span></div>
                 <motion.div key={vocabIdx} initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="vocab-display">
-                  <div className="big-word" style={{ color: gc }}>{vocabWords[vocabIdx % vocabWords.length].word}</div>
+                  <div className="big-word" style={{ color: gc }}>{vocabWords[vocabIdx].word}</div>
                   <p style={{ opacity: 0.6, marginBottom: 30 }}>What does this word mean?</p>
                   <div className="opts-col">
                     {vocabWords[vocabIdx].options.map(o => (
@@ -137,6 +187,15 @@ export default function EnglishLab() {
                 </motion.div>
                 {vocabFb === 'correct' && <div className="fb-bar correct">✅ Correct! +10🍎</div>}
                 {vocabFb === 'wrong' && <div className="fb-bar wrong">❌ Try again!</div>}
+                {vocabDone && <div className="fb-bar correct">🏁 Vocabulary round complete. No looping.</div>}
+                {vocabDone && (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => { setVocabIdx(0); setVocabDone(false); setVocabScore(0) }}
+                  >
+                    Restart Vocabulary Set
+                  </button>
+                )}
               </div>
             ) : (
               <div style={{ color: 'white' }}>Failed to load content.</div>
@@ -158,6 +217,12 @@ export default function EnglishLab() {
               </motion.div>
               {gramFb === 'correct' && <div className="fb-bar correct">✅ Rule: {GRAMMAR_Q[gramIdx].rule}</div>}
               {gramFb === 'wrong' && <div className="fb-bar wrong">❌ Not quite. Think about the rule!</div>}
+              {gramDone && <div className="fb-bar correct">🏁 Grammar set complete. No looping.</div>}
+              {gramDone && (
+                <button className="btn btn-ghost btn-sm" onClick={() => { setGramIdx(0); setGramDone(false); setGramScore(0) }}>
+                  Restart Grammar Set
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -175,6 +240,62 @@ export default function EnglishLab() {
             </div>
           </div>
         )}
+
+        {tab === 'lesson' && (
+          <div className="game-center" style={{ maxWidth: 900 }}>
+            <div className="game-card-lg">
+              <div className="gc-top"><h3>🎬 Reading & Language Studio</h3><span className="pill">Grade {grade}</span></div>
+              <div className="lesson-grid">
+                <div className="lesson-pane">
+                  <svg viewBox="0 0 440 220" width="100%" height="220" role="img" aria-label="Reading fluency animation">
+                    <rect x="0" y="0" width="440" height="220" fill="#0f172a" rx="12" />
+                    <text x="18" y="28" fill="#f8fafc" fontSize="13">Fluency Pattern</text>
+                    {[0,1,2,3,4,5].map((n) => (
+                      <path
+                        key={n}
+                        d={`M 20 ${190 - n * 22} Q 70 ${120 - n * 18}, 120 ${190 - n * 22} T 220 ${190 - n * 22} T 320 ${190 - n * 22} T 420 ${190 - n * 22}`}
+                        fill="none"
+                        stroke={n % 2 === 0 ? '#38bdf8' : '#22c55e'}
+                        strokeWidth="2"
+                        opacity="0.85"
+                      >
+                        <animate attributeName="stroke-dasharray" values="0,600;600,0" dur={`${2 + n * 0.3}s`} repeatCount="indefinite" />
+                      </path>
+                    ))}
+                  </svg>
+                  <p style={{ marginTop: 10, fontSize: '0.9rem', opacity: 0.8 }}>
+                    Read in phrases, not single words. Pause at punctuation and stress keywords to improve meaning.
+                  </p>
+                </div>
+                <div className="lesson-pane">
+                  <h4 style={{ marginTop: 0 }}>{activeLesson.title} Mini-Lesson</h4>
+                  <p style={{ fontSize: '0.92rem', lineHeight: 1.6 }}>{activeLesson.text}</p>
+                  <p style={{ fontWeight: 700 }}>{activeLesson.question}</p>
+                  <div className="opts-col">
+                    {activeLesson.options.map((opt) => (
+                      <button
+                        key={opt}
+                        className="opt-btn"
+                        onClick={() => {
+                          const correct = opt === activeLesson.answer
+                          setLessonFeedback(correct ? `✅ ${activeLesson.explain}` : '❌ Try again. Use evidence from the sentence.')
+                          recordAdaptiveResult('english', grade, correct)
+                          setPlanTick((v) => v + 1)
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                  {lessonFeedback && <div className="fb-bar correct" style={{ marginTop: 10 }}>{lessonFeedback}</div>}
+                  <button className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={() => { setLessonIndex(i => i + 1); setLessonFeedback('') }}>
+                    Next Lesson
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <style>{`
         .lab-fullscreen{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#0a0e1a;color:#fff;z-index:2000;display:flex;flex-direction:column}
@@ -183,6 +304,7 @@ export default function EnglishLab() {
         .nav-btn{background:none;border:none;color:#94a3b8;padding:8px 14px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .2s}
         .nav-btn.active{color:#38bdf8;border-bottom:2px solid #38bdf8}
         .lab-main{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center}
+        .adaptive-banner{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid #334155;border-radius:999px;padding:6px 14px;font-size:0.82rem;z-index:4}
         .game-center{width:100%;max-width:600px;padding:20px}
         .game-card-lg{background:#1a1f2e;border:1px solid #2a3040;border-radius:24px;padding:40px}
         .gc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
@@ -205,6 +327,9 @@ export default function EnglishLab() {
         .editor-area{flex:1;padding:30px}
         .writing-editor{width:100%;height:100%;background:#1a1f2e;border:1px solid #2a3040;color:#fff;padding:30px;border-radius:16px;font-size:1.1rem;line-height:1.8;resize:none;font-family:Georgia,serif}
         .writing-editor:focus{outline:none;border-color:#38bdf8}
+        .lesson-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+        .lesson-pane{background:#111827;border:1px solid #2a3040;border-radius:14px;padding:14px}
+        @media (max-width: 900px){.lesson-grid{grid-template-columns:1fr}}
       `}</style>
     </div>
   )

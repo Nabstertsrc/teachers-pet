@@ -1,7 +1,7 @@
 .sidebar {
   position: fixed; top: 0; left: 0; height: 100vh;
   width: var(--sidebar-w);
-  background: var(--bg-card);
+  background: linear-gradient(180deg, var(--bg-card), var(--bg-surface));
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   z-index: 600;
@@ -14,12 +14,14 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px; border-bottom: 1px solid var(--border);
   min-height: 64px;
+  background: rgba(255, 255, 255, 0.3);
 }
 .sidebar-logo { display: flex; align-items: center; gap: 12px; overflow: hidden; }
 .logo-icon { font-size: 1.4rem; flex-shrink: 0; }
 .logo-text {
   font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
   color: var(--primary); white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 .collapse-btn {
   background: transparent; border: none;
@@ -35,12 +37,12 @@
 .nav-item {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 12px; border-radius: var(--radius-sm);
-  color: var(--text-secondary); font-size: 0.88rem; font-weight: 500;
+  color: var(--text-secondary); font-size: 0.86rem; font-weight: 600;
   text-decoration: none; cursor: pointer; border: none; background: none;
   width: 100%; transition: all var(--transition); white-space: nowrap;
   position: relative;
 }
-.nav-item:hover { background: var(--bg-hover); color: var(--text); }
+.nav-item:hover { background: var(--bg-hover); color: var(--text); transform: translateX(1px); }
 .nav-item.active {
   background: var(--bg-hover);
   color: var(--primary);
@@ -73,19 +75,30 @@
 .nav-folder-header {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 12px; border-radius: var(--radius-sm);
-  color: var(--text-muted); font-size: 0.72rem; font-weight: 700;
+  color: var(--text-muted); font-size: 0.68rem; font-weight: 800;
   text-transform: uppercase; letter-spacing: 0.08em;
   cursor: pointer; transition: all var(--transition);
 }
 
 .nav-folder-header:hover { background: var(--bg-hover); color: var(--text); }
 .nav-folder-header.open { color: var(--primary); }
+.folder-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+}
 
 .folder-arrow { margin-left: auto; font-size: 0.7rem; opacity: 0.6; }
 
 .nav-folder-content {
   margin-left: 12px;
-  border-left: 1px solid var(--border);
+  border-left: 1px dashed var(--border);
   padding-left: 4px;
   display: flex;
   flex-direction: column;

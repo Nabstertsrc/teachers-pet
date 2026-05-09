@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { solveMathProblem, generateMathTutorial } from '../../lib/gemini'
 import { useToast } from '../../context/AppContext'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import { getAdaptivePlan, recordAdaptiveResult } from '../../lib/adaptivePlanner'
 import 'katex/dist/katex.min.css'
 
 const FORMULAS = {
@@ -14,6 +15,24 @@ const FORMULAS = {
   quadratic: String.raw`$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$`
 }
 
+const LESSON_STEPS = [
+  {
+    title: 'Represent The Problem',
+    explain: 'Translate words into symbols. If distance is constant, model with d = rt.',
+    equation: String.raw`d = r \times t`,
+  },
+  {
+    title: 'Pick A Strategy',
+    explain: 'Choose substitution, factorization, or graphing based on what is asked.',
+    equation: String.raw`y = mx + c`,
+  },
+  {
+    title: 'Check Reasonableness',
+    explain: 'Estimate first. Your exact answer should match the scale of the estimate.',
+    equation: String.raw`\text{error} = \left|\text{exact} - \text{estimate}\right|`,
+  },
+]
+
 export default function MathsLab() {
   const toast = useToast()
   const [tab, setTab] = useState('solve')
@@ -21,6 +40,17 @@ export default function MathsLab() {
   const [problem, setProblem] = useState('')
   const [grade, setGrade] = useState('10')
   const [result, setResult] = useState('')
+  const [lessonStep, setLessonStep] = useState(0)
+  const [equationChoice, setEquationChoice] = useState('')
+  const [equationFeedback, setEquationFeedback] = useState('')
+  const [planTick, setPlanTick] = useState(0)
+  const adaptivePlan = useMemo(() => getAdaptivePlan('maths', grade), [grade, planTick])
+
+  useEffect(() => {
+    setLessonStep(0)
+    setEquationChoice('')
+    setEquationFeedback('')
+  }, [grade])
 
   const handleSolve = async () => {
     if (!problem.trim()) return
@@ -37,11 +67,20 @@ export default function MathsLab() {
   }
 
   const handleLearn = async (topic) => {
+    const cacheKey = `maths-tutorial:${grade}:${topic.toLowerCase()}`
+    const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null
+    if (cached) {
+      setResult(cached)
+      setTab('learn')
+      toast(`Loaded cached tutorial for ${topic} ✅`, 'success')
+      return
+    }
     setGenerating(true)
     setTab('learn')
     try {
       const res = await generateMathTutorial(topic, grade)
       setResult(res)
+      if (typeof window !== 'undefined') localStorage.setItem(cacheKey, res)
       toast(`Tutorial for ${topic} is ready! ✨`, 'success')
     } catch {
       toast('Failed to generate tutorial', 'error')
@@ -70,8 +109,15 @@ export default function MathsLab() {
       <div className="tabs">
         <button className={`tab ${tab === 'solve' ? 'active' : ''}`} onClick={() => setTab('solve')}>🔍 Solve & Explain</button>
         <button className={`tab ${tab === 'learn' ? 'active' : ''}`} onClick={() => setTab('learn')}>📖 Interactive Classes</button>
+        <button className={`tab ${tab === 'studio' ? 'active' : ''}`} onClick={() => setTab('studio')}>🧠 Curriculum Studio</button>
         <button className={`tab ${tab === 'formulas' ? 'active' : ''}`} onClick={() => setTab('formulas')}>🧪 Formula Bank</button>
         <button className={`tab ${tab === 'tips' ? 'active' : ''}`} onClick={() => setTab('tips')}>💡 Study Tips</button>
+      </div>
+      <div className="card-glass" style={{ padding: 12, marginBottom: 12 }}>
+        <strong>Adaptive Plan:</strong> Level {adaptivePlan.level} | Mastery {adaptivePlan.mastery}% | Streak {adaptivePlan.streak}
+        <div style={{ fontSize: '0.9rem', marginTop: 4 }}>
+          {adaptivePlan.objective} | Pace: {adaptivePlan.pacing}
+        </div>
       </div>
 
       <div className="grid-2" style={{ alignItems: 'start' }}>
@@ -147,6 +193,60 @@ export default function MathsLab() {
             </div>
           )}
 
+          {tab === 'studio' && (
+            <div className="card">
+              <h3>🧠 Advanced Lesson Studio</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: 12 }}>
+                Grade-aware mini-lesson: model, solve, and verify with equations and visual interpretation.
+              </p>
+
+              <div className="card-glass" style={{ padding: 16, marginBottom: 12 }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>
+                  Step {lessonStep + 1}: {LESSON_STEPS[lessonStep].title}
+                </div>
+                <div style={{ fontSize: '0.95rem', marginBottom: 8 }}>{LESSON_STEPS[lessonStep].explain}</div>
+                <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                  {`$${LESSON_STEPS[lessonStep].equation}$`}
+                </ReactMarkdown>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  style={{ marginTop: 8 }}
+                  onClick={() => setLessonStep((prev) => Math.min(LESSON_STEPS.length - 1, prev + 1))}
+                  disabled={lessonStep >= LESSON_STEPS.length - 1}
+                >
+                  {lessonStep >= LESSON_STEPS.length - 1 ? 'Lesson Complete' : 'Next Teaching Step'}
+                </button>
+              </div>
+
+              <div className="card-glass" style={{ padding: 16 }}>
+                <div style={{ fontWeight: 700, marginBottom: 8 }}>Equation Checkpoint</div>
+                <div style={{ fontSize: '0.9rem', marginBottom: 10 }}>
+                  If the line passes through (0,2) and (3,8), which equation is correct?
+                </div>
+                <div className="grid-2" style={{ gap: 8 }}>
+                  {['y = 2x + 2', 'y = x + 2', 'y = 3x + 8', 'y = 2x - 2'].map((opt) => (
+                    <button
+                      key={opt}
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        const correct = opt === 'y = 2x + 2'
+                        setEquationChoice(opt)
+                        setEquationFeedback(correct ? 'Correct: slope is 2 and intercept is 2.' : 'Try again: compute slope (8-2)/(3-0).')
+                        recordAdaptiveResult('maths', grade, correct)
+                        setPlanTick((v) => v + 1)
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {equationChoice && (
+                  <p style={{ marginTop: 10, fontSize: '0.9rem' }}>{equationFeedback}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {tab === 'tips' && (
             <div className="card">
               <h3>💡 Ways to Tackle Maths</h3>
@@ -162,6 +262,33 @@ export default function MathsLab() {
         </div>
 
         <div>
+          {tab === 'studio' && (
+            <div className="card" style={{ marginBottom: 16 }}>
+              <h3>📈 Animated SVG Concept Board</h3>
+              <svg viewBox="0 0 420 240" width="100%" height="240" role="img" aria-label="Linear graph explainer">
+                <defs>
+                  <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3.5" orient="auto">
+                    <polygon points="0 0, 7 3.5, 0 7" fill="#38bdf8" />
+                  </marker>
+                </defs>
+                <rect x="0" y="0" width="420" height="240" fill="rgba(148,163,184,0.08)" rx="12" />
+                <line x1="40" y1="200" x2="390" y2="200" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                <line x1="40" y1="200" x2="40" y2="20" stroke="#94a3b8" strokeWidth="2" markerEnd="url(#arrow)" />
+                <line x1="40" y1="160" x2="340" y2="40" stroke="#38bdf8" strokeWidth="4">
+                  <animate attributeName="stroke-dasharray" values="0,500;500,0" dur="2.2s" repeatCount="indefinite" />
+                </line>
+                <circle cx="40" cy="160" r="6" fill="#22c55e" />
+                <circle cx="220" cy="88" r="6" fill="#22c55e" />
+                <text x="50" y="154" fontSize="12" fill="currentColor">(0,2)</text>
+                <text x="228" y="84" fontSize="12" fill="currentColor">(3,8)</text>
+                <text x="262" y="52" fontSize="13" fill="currentColor">y = 2x + 2</text>
+              </svg>
+              <p style={{ marginTop: 10, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                The animation traces the line repeatedly so learners can connect slope, intercept, and coordinate movement.
+              </p>
+            </div>
+          )}
+
           {!result && !generating && (
             <div className="card" style={{ border: '2px dashed var(--border-light)', textAlign: 'center', padding: 60 }}>
               <div style={{ fontSize: '3rem', marginBottom: 16 }}>📊</div>

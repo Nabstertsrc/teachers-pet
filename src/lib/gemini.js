@@ -8,6 +8,56 @@ const getSettings = () => {
 }
 
 const delay = (ms) => new Promise(res => setTimeout(res, ms))
+const stripCodeFences = (value = '') => value.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '').trim()
+
+function parseFirstJsonBlock(raw, fallback = null) {
+  try {
+    const clean = stripCodeFences(raw)
+    return JSON.parse(clean)
+  } catch {
+    try {
+      const objMatch = raw.match(/\{[\s\S]*\}/)
+      if (objMatch) return JSON.parse(objMatch[0])
+      const arrMatch = raw.match(/\[[\s\S]*\]/)
+      if (arrMatch) return JSON.parse(arrMatch[0])
+      return fallback
+    } catch {
+      return fallback
+    }
+  }
+}
+
+function simpleMathFallback(problem, grade) {
+  const sanitized = String(problem || '').replace(/[^\d+\-*/().=xX\s]/g, '').trim()
+  const linear = sanitized.match(/^([+-]?\d*)\s*[xX]\s*([+-]\s*\d+)?\s*=\s*([+-]?\d+)$/)
+  if (linear) {
+    const aRaw = linear[1].replace(/\s+/g, '')
+    const bRaw = (linear[2] || '0').replace(/\s+/g, '')
+    const c = Number(linear[3])
+    const a = aRaw === '' || aRaw === '+' ? 1 : aRaw === '-' ? -1 : Number(aRaw)
+    const b = Number(bRaw || 0)
+    if (!Number.isNaN(a) && !Number.isNaN(b) && !Number.isNaN(c) && a !== 0) {
+      const x = (c - b) / a
+      return `## Offline Maths Solver (Fallback)\n\nGiven: \\(${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}\\)\n\n1. Move constant to the right: \\(${a}x = ${c - b}\\)\n2. Divide by \\(${a}\\): \\(x = ${x}\\)\n\nFinal answer: **x = ${x}**\n\n_Grade ${grade} explanation generated in offline fallback mode._`
+    }
+  }
+  try {
+    // Controlled arithmetic fallback; only arithmetic symbols are allowed.
+    if (/^[\d+\-*/().\s]+$/.test(sanitized)) {
+      const result = Function(`"use strict"; return (${sanitized})`)()
+      if (typeof result === 'number' && Number.isFinite(result)) {
+        return `## Offline Maths Solver (Fallback)\n\nExpression: \\(${sanitized}\\)\n\nResult: **${result}**\n\n_No AI provider available, so this was solved locally._`
+      }
+    }
+  } catch {
+    // Ignore and return generic fallback.
+  }
+  return `## Maths Helper (Fallback)\n\nI could not reach the AI provider right now. Please verify your API key/network in **Settings**, then retry.\n\nProblem submitted:\n\n> ${problem}`
+}
+
+function tutorialFallback(topic, grade) {
+  return `## ${topic} - Grade ${grade} (Fallback Lesson)\n\n### 1. Quick Concept\n- Understand the core definition of **${topic}**.\n- Identify where it appears in real problems.\n\n### 2. Worked Structure\n1. Read the question carefully.\n2. Identify known values.\n3. Choose the correct formula/rule.\n4. Substitute and simplify.\n5. Check if answer is reasonable.\n\n### 3. Practice\n- Example A: Basic recall question\n- Example B: Multi-step application\n- Example C: Word problem translation\n\n### 4. Pro Tip\n- Keep an error log: write each mistake and its correction pattern.\n\n_This lesson is shown because AI service is currently unavailable._`
+}
 
 async function generate(prompt, systemInstruction = '', retries = 3) {
   // Guard against internet disconnection
@@ -48,7 +98,8 @@ async function generate(prompt, systemInstruction = '', retries = 3) {
       if (geminiKey) {
         // Try these models in order, prioritizing Gemini 3
         const modelsToTry = [
-          'gemini-3-flash-preview', 
+          'gemini-2.5-flash',
+          'gemini-2.5-flash-lite',
           'gemini-2.0-flash', 
           'gemini-1.5-flash', 
           'gemini-1.5-flash-latest'
@@ -434,7 +485,11 @@ export async function solveMathProblem(problem, grade) {
   Tailor the explanation for Grade ${grade}.`
   
   const prompt = `Solve and explain this math problem: ${problem}`
-  return generate(prompt, sys)
+  try {
+    return await generate(prompt, sys)
+  } catch {
+    return simpleMathFallback(problem, grade)
+  }
 }
 
 export async function generateMathTutorial(topic, grade) {
@@ -447,7 +502,11 @@ export async function generateMathTutorial(topic, grade) {
   Use LaTeX for formulas.`
   
   const prompt = `Create a tutorial for Grade ${grade} on the topic: ${topic}`
-  return generate(prompt, sys)
+  try {
+    return await generate(prompt, sys)
+  } catch {
+    return tutorialFallback(topic, grade)
+  }
 }
 
 export async function predictReaction(el1, el2) {
@@ -458,7 +517,17 @@ export async function predictReaction(el1, el2) {
   Keep it educational and safe.`
   
   const prompt = `What happens when you mix ${el1} and ${el2}?`
-  return generate(prompt, sys)
+  try {
+    return await generate(prompt, sys)
+  } catch {
+    const key = [el1, el2].map((v) => String(v).toLowerCase()).sort().join('+')
+    const offline = {
+      'hydrogen+oxygen': 'Hydrogen Combustion\nHydrogen and oxygen can react to form water. Visual effect: none',
+      'sodium+chlorine': 'Salt Formation\nSodium reacts strongly with chlorine to form sodium chloride. Visual effect: explosion',
+      'iron+oxygen': 'Oxidation\nIron slowly reacts with oxygen to form rust over time. Visual effect: color_change',
+    }
+    return offline[key] || `No significant reaction\nNo curated offline reaction for ${el1} and ${el2}.`
+  }
 }
 
 export async function generatePhonicsLesson(level) {
@@ -504,13 +573,42 @@ export async function generateLabContent(labType, grade) {
     prompt = `Generate a JSON array of 10 items for ${labType} for Grade ${grade}.`
   }
 
-  const result = await generate(prompt, sys)
+  let result = ''
   try {
-    // Strip potential markdown wrappers if the AI disobeys
-    const cleanResult = result.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-    return JSON.parse(cleanResult)
+    result = await generate(prompt, sys)
+  } catch {
+    if (labType === 'history_timeline') {
+      return [
+        { id: '1', year: 1910, event: 'Union of South Africa is established.' },
+        { id: '2', year: 1948, event: 'Apartheid policy becomes official.' },
+        { id: '3', year: 1960, event: 'Sharpeville protest and international response.' },
+        { id: '4', year: 1976, event: 'Soweto student uprising.' },
+        { id: '5', year: 1990, event: 'Nelson Mandela is released from prison.' },
+        { id: '6', year: 1994, event: 'First democratic elections in South Africa.' },
+      ].sort(() => Math.random() - 0.5)
+    }
+    if (labType === 'english_vocab') {
+      return [
+        { word: 'Analyze', meaning: 'To examine in detail', options: ['To examine in detail', 'To run fast', 'To cook food', 'To sing loudly'] },
+        { word: 'Interpret', meaning: 'To explain the meaning of something', options: ['To build a wall', 'To explain the meaning of something', 'To erase text', 'To measure distance'] },
+        { word: 'Evidence', meaning: 'Facts that support a claim', options: ['A random guess', 'Facts that support a claim', 'A weather forecast', 'A drawing style'] },
+        { word: 'Compare', meaning: 'To identify similarities and differences', options: ['To identify similarities and differences', 'To hide details', 'To sell products', 'To sleep deeply'] },
+      ]
+    }
+    if (labType === 'natural_science') {
+      return [
+        { q: 'What process do plants use to make food?', a: 'Photosynthesis', options: ['Photosynthesis', 'Condensation', 'Erosion', 'Filtration'] },
+        { q: 'Which state of matter has a fixed volume but no fixed shape?', a: 'Liquid', options: ['Liquid', 'Gas', 'Plasma', 'Sound'] },
+        { q: 'What force pulls objects toward Earth?', a: 'Gravity', options: ['Gravity', 'Magnetism', 'Friction', 'Evaporation'] },
+      ]
+    }
+    return []
+  }
+  try {
+    const parsed = parseFirstJsonBlock(result, [])
+    return Array.isArray(parsed) ? parsed : []
   } catch (e) {
     console.error('Failed to parse AI lab content:', e, result)
-    return null
+    return []
   }
 }

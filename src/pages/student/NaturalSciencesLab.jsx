@@ -162,7 +162,6 @@ export default function NaturalSciencesLab() {
               </div>
             </div>
           </div>
-          </div>
         )}
 
         {tab === 'quiz' && (

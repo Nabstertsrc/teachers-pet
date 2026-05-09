@@ -47,6 +47,8 @@ const NAV_STRUCTURE = [
     icon: '📂',
     items: [
       { path: '/student', label: 'Dashboard', icon: '🏠' },
+      { path: '/student-portal', label: 'Student Portal', icon: '🎓' },
+      { path: '/study-lab', label: 'AI Study Lab', icon: '🔬' },
       { path: '/auto-organizer', label: 'Auto-Organizer', icon: '📂' },
       { path: '/assignments', label: 'Assignments', icon: '📋' },
       { path: '/learning-path', label: 'Learning Path', icon: '🗺️' },
@@ -68,10 +70,13 @@ const NAV_STRUCTURE = [
     title: 'BRAIN GAMES',
     icon: '📂',
     items: [
+      { path: '/games', label: 'Game Lab', icon: '🎮' },
       { path: '/game/fluffy-jump', label: 'Fluffy Jump', icon: '☁️' },
       { path: '/game/word-quest', label: 'Word Quest', icon: '📝' },
       { path: '/maths-games', label: 'Maths Brain Games', icon: '🧠' },
       { path: '/game/snake-game', label: 'Snake Game', icon: '🐍' },
+      { path: '/game/number-ninja', label: 'Number Ninja', icon: '🥷' },
+      { path: '/game/memory-matrix', label: 'Memory Matrix', icon: '🧩' },
     ]
   },
   {
@@ -81,6 +86,7 @@ const NAV_STRUCTURE = [
       { path: '/resources', label: 'Resources', icon: '📖' },
       { path: '/todo', label: 'To-Do List', icon: '✅' },
       { path: '/parent-comm', label: 'Parent Comm', icon: '📧' },
+      { path: '/about', label: 'About Platform', icon: 'ℹ️' },
     ]
   }
 ]
@@ -105,7 +111,7 @@ export default function Sidebar() {
           onClick={() => toggleFolder(section.title)}
           title={section.title}
         >
-          <span className="nav-icon">{isOpen ? '📂' : '📁'}</span>
+          <span className="nav-icon folder-icon">{isOpen ? '▾' : '▸'}</span>
           {!sidebarCollapsed && <span className="nav-label">{section.title}</span>}
           {!sidebarCollapsed && <span className="folder-arrow">{isOpen ? '▾' : '▸'}</span>}
         </div>

@@ -1,0 +1,211 @@
+/* Kids Theme - Inspired by Reading Eggs & Inspired Minds */
+
+.kids-theme {
+  --primary: #FF5252;
+  --primary-light: #FF8A80;
+  --primary-dark: #D50000;
+  --secondary: #4CAF50;
+  --accent: #FFCA28;
+  --info: #03A9F4;
+  --kids-ink: #1f2937;
+  --kids-muted: #4b5563;
+  --kids-surface: #ffffff;
+  --text: #1f2937;
+  --text-secondary: #374151;
+  --text-muted: #4b5563;
+  
+  --bg: #E1F5FE;
+  --bg-card: #FFFFFF;
+  --bg-surface: #F5F5F5;
+  
+  --radius-sm: 12px;
+  --radius: 20px;
+  --radius-lg: 30px;
+  --radius-xl: 40px;
+  
+  --shadow: 0 8px 0 rgba(0,0,0,0.1), 0 15px 20px rgba(0,0,0,0.1);
+  --shadow-hover: 0 4px 0 rgba(0,0,0,0.1), 0 8px 15px rgba(0,0,0,0.1);
+  
+  --font-display: 'Fredoka One', 'Comic Neue', 'Baloo 2', sans-serif;
+}
+
+[data-theme='dark'] .kids-theme {
+  --bg: #12122A;
+  --bg-card: #1E1E38;
+  --bg-surface: #25254A;
+  --kids-ink: #f8fafc;
+  --kids-muted: #cbd5e1;
+  --kids-surface: #1f2a44;
+  --text: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --shadow: 0 8px 0 rgba(0,0,0,0.3), 0 15px 20px rgba(0,0,0,0.3);
+}
+
+.kids-theme .page-wrapper {
+  background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.2)"/></svg>');
+  background-size: 150px;
+  border-radius: var(--radius-lg);
+  margin: 10px;
+  padding: 40px;
+  box-shadow: inset 0 0 50px rgba(255,255,255,0.5);
+}
+
+.kids-theme,
+.kids-theme h1,
+.kids-theme h2,
+.kids-theme h3,
+.kids-theme h4,
+.kids-theme h5,
+.kids-theme h6 {
+  color: var(--kids-ink);
+}
+
+.kids-theme p,
+.kids-theme .stat-label {
+  color: var(--kids-muted);
+}
+
+.kids-theme h1.page-title {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  color: var(--primary);
+  text-shadow: 3px 3px 0 #FFF, 5px 5px 0 rgba(0,0,0,0.1);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.kids-theme p.page-subtitle {
+  font-size: 1.2rem;
+  color: var(--kids-muted);
+  background: rgba(255,255,255,0.7);
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  display: inline-block;
+  font-weight: 600;
+}
+
+[data-theme='dark'] .kids-theme p.page-subtitle {
+  color: var(--kids-muted);
+  background: rgba(0,0,0,0.4);
+}
+
+.kids-theme .card {
+  border: 4px solid transparent;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: var(--bg-card);
+}
+
+.kids-theme .card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+}
+
+.kids-theme .stat-card {
+  background: var(--kids-surface);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 3px solid #EEE;
+}
+[data-theme='dark'] .kids-theme .stat-card {
+  background: var(--kids-surface);
+  border-color: #333;
+}
+
+.kids-theme .card-glass {
+  background: var(--kids-surface);
+  border: 2px solid rgba(148, 163, 184, 0.35);
+  color: var(--kids-ink);
+}
+
+[data-theme='dark'] .kids-theme .card-glass {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.kids-theme .btn {
+  border-radius: var(--radius-xl);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 12px 28px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  transition: all 0.1s;
+  border: none;
+}
+
+.kids-theme .btn:active {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 rgba(0,0,0,0.15);
+}
+
+.kids-theme .btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 6px 0 var(--primary-dark);
+}
+.kids-theme .btn-primary:active {
+  box-shadow: 0 0 0 var(--primary-dark);
+}
+
+.kids-theme .btn-secondary {
+  background: var(--secondary);
+  color: white;
+  box-shadow: 0 6px 0 #388E3C;
+}
+.kids-theme .btn-secondary:active {
+  box-shadow: 0 0 0 #388E3C;
+}
+
+.kids-theme .badge {
+  padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--kids-ink);
+  background: #fff7cc;
+  border: 2px solid #fcd34d;
+}
+
+.kids-theme .badge-secondary {
+  color: var(--kids-ink);
+  background: #dbeafe;
+  border: 2px solid #93c5fd;
+}
+
+.kids-theme .btn-ghost {
+  background: var(--kids-surface);
+  color: var(--kids-ink);
+  border: 2px solid rgba(148, 163, 184, 0.55);
+}
+
+.kids-theme .btn-ghost:hover {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.kids-theme .form-input {
+  color: var(--kids-ink);
+  background: var(--kids-surface);
+  border-radius: var(--radius-lg);
+  border: 3px solid #E0E0E0;
+  padding: 15px 20px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.05);
+}
+.kids-theme .form-input:focus {
+  border-color: var(--info);
+  box-shadow: 0 0 0 4px rgba(3, 169, 244, 0.2);
+}
+
+.kids-theme .form-input::placeholder {
+  color: var(--kids-muted);
+}

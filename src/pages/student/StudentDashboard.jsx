@@ -1,13 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useToast } from '../../context/AppContext'
+import { getGames } from '../../lib/gameCatalog'
+import { getRecommendedGameSession } from '../../lib/adaptivePlanner'
+import '../../styles/kids-theme.css'
 
 export default function StudentDashboard() {
   const navigate = useNavigate()
   const [stats, setStats] = useState({ streak: 5, coins: 120, assignments: 3, progress: 65 })
+  const featuredGames = useMemo(
+    () => getGames()
+      .map((game) => ({ ...game, adaptive: getRecommendedGameSession(game) }))
+      .sort((a, b) => b.adaptive.state.mastery - a.adaptive.state.mastery)
+      .slice(0, 4),
+    []
+  )
+  const learnerTools = [
+    { title: 'Student Portal', icon: '🎓', path: '/student-portal', desc: 'Guides, flashcards, and notes' },
+    { title: 'AI Study Lab', icon: '🔬', path: '/study-lab', desc: 'Quizzes, summaries, doc chat' },
+    { title: 'Auto-Organizer', icon: '📂', path: '/auto-organizer', desc: 'Organise docs and deadlines' },
+    { title: 'Opportunities', icon: '🌍', path: '/opportunities', desc: 'Bursaries and careers' },
+  ]
 
   return (
-    <div className="page-wrapper animate-fade">
+    <div className="page-wrapper animate-fade kids-theme">
       <div className="page-header">
         <div>
           <h1 className="page-title">👋 Welcome back, Scholar!</h1>
@@ -38,7 +53,7 @@ export default function StudentDashboard() {
               { label: 'AI Study Lab', icon: '🔬', path: '/study-lab', desc: 'Notes & Guides' },
               { label: 'Assignments', icon: '📋', path: '/assignments', desc: 'Tasks to do' },
               { label: 'Learning Path', icon: '🗺️', path: '/learning-path', desc: 'Next steps' },
-              { label: 'Resources', icon: '📖', path: '/resources', desc: 'Library' },
+              { label: 'Game Lab', icon: '🎮', path: '/games', desc: 'Play & practise' },
             ].map((a, i) => (
               <button key={i} className="card-glass" onClick={() => navigate(a.path)} style={{ textAlign: 'left', padding: 16, cursor: 'pointer', border: '1px solid var(--border)' }}>
                 <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{a.icon}</div>
@@ -66,6 +81,63 @@ export default function StudentDashboard() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>Learner Toolkit</h3>
+            <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>Support for different grades, subjects, and learning styles.</p>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+          {learnerTools.map((tool) => (
+            <button
+              key={tool.title}
+              className="card-glass"
+              onClick={() => navigate(tool.path)}
+              style={{ textAlign: 'left', padding: 16, cursor: 'pointer', border: '1px solid var(--border)' }}
+            >
+              <div style={{ fontSize: '1.6rem', marginBottom: 8 }}>{tool.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 4 }}>{tool.title}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{tool.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: 24 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>Featured Game Picks</h3>
+            <p style={{ margin: '6px 0 0', color: 'var(--text-muted)' }}>Fresh games with stronger mechanics and clearer learning goals.</p>
+          </div>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/games')}>
+            Open Game Lab
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+          {featuredGames.map((game) => (
+            <button
+              key={game.id}
+              className="card-glass"
+              onClick={() => navigate(`/game/${game.id}?level=${game.adaptive.recommendedLevel.toLowerCase()}&sessionMode=${game.adaptive.recommendedMode.toLowerCase()}`)}
+              style={{
+                textAlign: 'left',
+                padding: 16,
+                cursor: 'pointer',
+                border: `1px solid ${game.accent}44`,
+                borderTop: `3px solid ${game.accent}`,
+              }}
+            >
+              <div style={{ fontSize: '1.6rem', marginBottom: 8 }}>{game.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: 4 }}>{game.title}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{game.description}</div>
+              <div style={{ fontSize: '0.72rem', marginTop: 6 }}>Level: {game.adaptive.recommendedLevel} · Mode: {game.adaptive.recommendedMode}</div>
+            </button>
+          ))}
         </div>
       </div>
     </div>

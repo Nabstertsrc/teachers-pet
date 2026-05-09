@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '../../context/AppContext'
+import { getAdaptivePlan, recordAdaptiveResult } from '../../lib/adaptivePlanner'
 
 const GEO_FEATURES = [
   { id: 'mtn', name: 'Mountain', emoji: '⛰️', svg: 'M10,50 L25,10 L40,50 Z', fill: '#6b7280' },
@@ -19,6 +20,14 @@ const ECON_SCENARIOS = [
   { q: 'Petrol price doubles. What happens to taxi fares?', a: 'increase', options: ['increase', 'decrease', 'stay same'] },
 ]
 
+const WORLD_HOTSPOTS = [
+  { id: 'africa', name: 'Africa', x: 332, y: 192, info: 'Second-largest continent with diverse climates and biomes.' },
+  { id: 'asia', name: 'Asia', x: 388, y: 150, info: 'Largest continent by area and population.' },
+  { id: 'europe', name: 'Europe', x: 343, y: 130, info: 'Dense transport networks and mixed economies.' },
+  { id: 'americas', name: 'Americas', x: 236, y: 165, info: 'From Arctic tundra to Amazon rainforest systems.' },
+  { id: 'oceania', name: 'Oceania', x: 463, y: 225, info: 'Island systems, coral reefs, and Pacific trade routes.' },
+]
+
 export default function SocialSciencesHub() {
   const toast = useToast()
   const [tab, setTab] = useState('geography')
@@ -28,7 +37,31 @@ export default function SocialSciencesHub() {
   const [ecoIdx, setEcoIdx] = useState(0)
   const [ecoScore, setEcoScore] = useState(0)
   const [ecoFeedback, setEcoFeedback] = useState(null)
+  const [ecoDone, setEcoDone] = useState(false)
+  const [ecoDeck, setEcoDeck] = useState(ECON_SCENARIOS)
+  const [curriculumFeedback, setCurriculumFeedback] = useState('')
+  const [globeSpin, setGlobeSpin] = useState(true)
+  const [selectedRegion, setSelectedRegion] = useState(WORLD_HOTSPOTS[0])
+  const [planTick, setPlanTick] = useState(0)
+  const adaptivePlan = useMemo(() => getAdaptivePlan('social-sciences', '8'), [planTick])
   const mapRef = useRef(null)
+
+  useEffect(() => {
+    const cacheKey = 'social-eco-deck:v1'
+    const cached = typeof window !== 'undefined' ? localStorage.getItem(cacheKey) : null
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached)
+        if (Array.isArray(parsed) && parsed.length) {
+          setEcoDeck(parsed)
+          return
+        }
+      } catch {}
+    }
+    const shuffled = [...ECON_SCENARIOS].sort(() => Math.random() - 0.5)
+    setEcoDeck(shuffled)
+    if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify(shuffled))
+  }, [])
 
   const handleMapClick = (e) => {
     if (!dragging) return
@@ -41,7 +74,9 @@ export default function SocialSciencesHub() {
   }
 
   const checkEcon = (answer) => {
-    const correct = ECON_SCENARIOS[ecoIdx].a === answer
+    if (ecoDone || !ecoDeck[ecoIdx]) return
+    const currentQ = ecoDeck[ecoIdx]
+    const correct = currentQ.a === answer
     if (correct) {
       setEcoScore(s => s + 15)
       setEcoFeedback('correct')
@@ -49,9 +84,17 @@ export default function SocialSciencesHub() {
     } else {
       setEcoFeedback('wrong')
     }
+    recordAdaptiveResult('social-sciences', '8', correct)
+    setPlanTick((v) => v + 1)
     setTimeout(() => {
       setEcoFeedback(null)
-      if (correct) setEcoIdx(i => (i + 1) % ECON_SCENARIOS.length)
+      if (correct) {
+        if (ecoIdx >= ecoDeck.length - 1) {
+          setEcoDone(true)
+        } else {
+          setEcoIdx(i => i + 1)
+        }
+      }
     }, 1200)
   }
 
@@ -67,13 +110,18 @@ export default function SocialSciencesHub() {
         </div>
         <div className="ss-nav">
           <button className={`nav-btn ${tab === 'geography' ? 'active' : ''}`} onClick={() => setTab('geography')}>📍 Map Builder</button>
+          <button className={`nav-btn ${tab === 'globe' ? 'active' : ''}`} onClick={() => setTab('globe')}>🌐 3D Globe</button>
           <button className={`nav-btn ${tab === 'economics' ? 'active' : ''}`} onClick={() => setTab('economics')}>💰 Economics</button>
           <button className={`nav-btn ${tab === 'quiz' ? 'active' : ''}`} onClick={() => setTab('quiz')}>🧠 Econ Quiz</button>
+          <button className={`nav-btn ${tab === 'curriculum' ? 'active' : ''}`} onClick={() => setTab('curriculum')}>📚 Lesson Studio</button>
         </div>
         <button className="btn btn-secondary btn-sm" onClick={() => window.history.back()}>Exit</button>
       </div>
 
       <div className="ss-body">
+        <div className="adaptive-banner">
+          Adaptive Plan: {adaptivePlan.level} | Mastery {adaptivePlan.mastery}% | {adaptivePlan.objective}
+        </div>
         {tab === 'geography' && (
           <div className="geo-layout">
             <div className="geo-panel">
@@ -146,6 +194,63 @@ export default function SocialSciencesHub() {
               {dragging && (
                 <div className="map-placing">Click to place: {dragging.emoji} {dragging.name}</div>
               )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'globe' && (
+          <div className="globe-layout">
+            <div className="globe-stage">
+              <svg viewBox="0 0 700 360" width="100%" height="360" aria-label="Interactive 3D globe">
+                <defs>
+                  <radialGradient id="earthGrad">
+                    <stop offset="0%" stopColor="#38bdf8" />
+                    <stop offset="100%" stopColor="#0e7490" />
+                  </radialGradient>
+                </defs>
+                <rect x="0" y="0" width="700" height="360" fill="#020617" />
+                <ellipse cx="350" cy="185" rx="130" ry="126" fill="url(#earthGrad)" />
+                <g className={globeSpin ? 'spin-globe' : ''}>
+                  <path d="M286 130 C300 105, 342 100, 366 122 C390 145, 362 180, 330 175 C312 171, 299 154, 286 130 Z" fill="#22c55e" opacity="0.9" />
+                  <path d="M355 120 C394 108, 450 128, 455 165 C459 198, 418 216, 382 207 C352 198, 337 165, 355 120 Z" fill="#16a34a" opacity="0.92" />
+                  <path d="M252 176 C273 160, 305 168, 315 193 C325 220, 294 241, 268 233 C244 226, 236 193, 252 176 Z" fill="#65a30d" opacity="0.9" />
+                  {WORLD_HOTSPOTS.map((h) => (
+                    <g key={h.id} onClick={() => {
+                      setSelectedRegion(h)
+                      recordAdaptiveResult('social-sciences', '8', true)
+                      setPlanTick((v) => v + 1)
+                    }}>
+                      <circle cx={h.x} cy={h.y} r="7" fill={selectedRegion.id === h.id ? '#f97316' : '#fde047'} />
+                      <circle cx={h.x} cy={h.y} r="13" fill="none" stroke="#f8fafc" strokeWidth="1">
+                        <animate attributeName="r" values="9;16;9" dur="1.8s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.8s" repeatCount="indefinite" />
+                      </circle>
+                    </g>
+                  ))}
+                </g>
+                <ellipse cx="350" cy="328" rx="165" ry="14" fill="#0f172a" />
+                <g>
+                  <ellipse cx="350" cy="185" rx="200" ry="70" fill="none" stroke="#334155" strokeWidth="1.5" />
+                  <g>
+                    <animateTransform attributeName="transform" type="rotate" from="0 350 185" to="360 350 185" dur="8s" repeatCount="indefinite" />
+                    <circle cx="550" cy="185" r="12" fill="#cbd5e1" />
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <div className="globe-panel">
+              <h3>🌐 Earth Systems Explorer</h3>
+              <p>Click hotspots to inspect regional geography and human-economic links.</p>
+              <div className="card-glass" style={{ padding: 12 }}>
+                <strong>{selectedRegion.name}</strong>
+                <p style={{ marginTop: 8 }}>{selectedRegion.info}</p>
+              </div>
+              <button className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={() => setGlobeSpin((v) => !v)}>
+                {globeSpin ? 'Pause Globe Spin' : 'Resume Globe Spin'}
+              </button>
+              <p style={{ fontSize: '0.88rem', marginTop: 10, opacity: 0.8 }}>
+                Inquiry Prompt: How do climate, trade routes, and population patterns affect development in this region?
+              </p>
             </div>
           </div>
         )}
@@ -225,12 +330,12 @@ export default function SocialSciencesHub() {
                 <span className="score-pill">🍎 {ecoScore} pts</span>
               </div>
               <div className="quiz-question">
-                <p style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 30 }}>{ECON_SCENARIOS[ecoIdx].q}</p>
+                <p style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: 30 }}>{ecoDeck[ecoIdx]?.q || 'Loading question...'}</p>
                 <div className="quiz-options">
-                  {ECON_SCENARIOS[ecoIdx].options.map(o => (
+                  {ecoDeck[ecoIdx]?.options.map(o => (
                     <motion.button
                       key={o}
-                      className={`quiz-opt ${ecoFeedback && ECON_SCENARIOS[ecoIdx].a === o ? 'correct' : ecoFeedback === 'wrong' ? '' : ''}`}
+                      className={`quiz-opt ${ecoFeedback && ecoDeck[ecoIdx].a === o ? 'correct' : ecoFeedback === 'wrong' ? '' : ''}`}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => !ecoFeedback && checkEcon(o)}
                     >
@@ -240,6 +345,56 @@ export default function SocialSciencesHub() {
                 </div>
                 {ecoFeedback === 'correct' && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="fb correct">✅ Correct! You understand market forces.</motion.div>}
                 {ecoFeedback === 'wrong' && <motion.div className="fb wrong">❌ Not quite. Think about how price affects buying behavior.</motion.div>}
+                {ecoDone && <div className="fb correct">🏁 Quiz complete. No looping.</div>}
+                {ecoDone && (
+                  <button className="btn btn-ghost btn-sm" onClick={() => { setEcoIdx(0); setEcoScore(0); setEcoDone(false) }}>
+                    Restart Quiz
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab === 'curriculum' && (
+          <div className="quiz-layout">
+            <div className="quiz-card">
+              <h3>📚 Social Sciences Curriculum Studio</h3>
+              <p style={{ opacity: 0.8, marginBottom: 14 }}>
+                Integrate map skills + economics decision-making in one inquiry cycle.
+              </p>
+              <svg viewBox="0 0 700 220" width="100%" height="220" role="img" aria-label="Map scale and trade flow animation">
+                <rect x="0" y="0" width="700" height="220" rx="12" fill="#0f172a" />
+                <rect x="35" y="45" width="230" height="140" fill="#1e293b" stroke="#38bdf8" />
+                <rect x="435" y="45" width="230" height="140" fill="#1e293b" stroke="#f59e0b" />
+                <text x="45" y="38" fill="#cbd5e1" fontSize="12">Map Scale: 1 : 50 000</text>
+                <text x="445" y="38" fill="#cbd5e1" fontSize="12">Market Node</text>
+                <circle cx="120" cy="110" r="8" fill="#22c55e" />
+                <circle cx="200" cy="150" r="8" fill="#22c55e" />
+                <line x1="120" y1="110" x2="200" y2="150" stroke="#22c55e" strokeWidth="3" />
+                <line x1="265" y1="115" x2="435" y2="115" stroke="#38bdf8" strokeWidth="4" strokeDasharray="8,6">
+                  <animate attributeName="stroke-dashoffset" values="0;-28" dur="1.2s" repeatCount="indefinite" />
+                </line>
+                <text x="280" y="104" fill="#93c5fd" fontSize="12">Goods flow</text>
+                <text x="450" y="98" fill="#f8fafc" fontSize="12">Revenue = Price × Quantity</text>
+                <text x="450" y="118" fill="#f8fafc" fontSize="12">Cost = Fixed + Variable</text>
+                <text x="450" y="138" fill="#22c55e" fontSize="12">Profit = Revenue - Cost</text>
+              </svg>
+              <div className="fb" style={{ marginTop: 12 }}>
+                <p style={{ marginTop: 0 }}>Applied Question: If transport distance doubles, which metric should rise first?</p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {['Variable cost', 'Tax rate', 'Demand certainty'].map((opt) => (
+                    <button
+                      key={opt}
+                      className="quiz-opt"
+                      style={{ padding: '10px 14px', fontSize: '0.95rem' }}
+                      onClick={() => setCurriculumFeedback(opt === 'Variable cost' ? '✅ Correct: transport directly increases variable logistics cost.' : '❌ Not first-order. Start with direct transport cost drivers.')}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {curriculumFeedback && <p style={{ marginTop: 8 }}>{curriculumFeedback}</p>}
               </div>
             </div>
           </div>
@@ -253,6 +408,7 @@ export default function SocialSciencesHub() {
         .nav-btn { background:none;border:none;color:#94a3b8;padding:8px 14px;cursor:pointer;font-weight:600;transition:all 0.2s;font-size:0.85rem; }
         .nav-btn.active { color:#38bdf8;border-bottom:2px solid #38bdf8; }
         .ss-body { flex:1;overflow:hidden; }
+        .adaptive-banner { position:absolute; top:66px; left:50%; transform:translateX(-50%); z-index:5; background:#1e293b; border:1px solid #334155; border-radius:999px; padding:6px 12px; font-size:0.8rem; }
 
         .geo-layout { display:flex;height:100%; }
         .geo-panel { width:280px;background:#111827;padding:20px;border-right:1px solid #1f2937;overflow-y:auto; }
@@ -272,6 +428,10 @@ export default function SocialSciencesHub() {
         .item-label { font-size:0.6rem;background:rgba(0,0,0,0.7);padding:2px 6px;border-radius:4px;margin-top:2px;white-space:nowrap; }
         .map-empty,.map-placing { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:0.3;font-size:1.1rem;text-align:center;pointer-events:none; }
         .map-placing { opacity:0.8;color:#f59e0b; }
+        .globe-layout { display:grid; grid-template-columns: 1.2fr 0.8fr; gap:14px; height:100%; padding: 84px 18px 18px; }
+        .globe-stage, .globe-panel { background:#0f172a; border:1px solid #334155; border-radius:14px; padding:10px; }
+        .spin-globe { transform-origin: 350px 185px; animation: globeRotate 20s linear infinite; }
+        @keyframes globeRotate { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
 
         .econ-layout,.quiz-layout { height:100%;display:flex;align-items:center;justify-content:center;padding:30px; }
         .econ-card,.quiz-card { background:#1a1f2e;border:1px solid #2a3040;border-radius:24px;padding:40px;width:100%;max-width:700px; }
@@ -293,6 +453,9 @@ export default function SocialSciencesHub() {
         .fb { margin-top:20px;padding:14px;border-radius:12px;font-weight:600; }
         .fb.correct { background:#2ecc7115;color:#2ecc71; }
         .fb.wrong { background:#e74c3c15;color:#e74c3c; }
+        @media (max-width: 980px) {
+          .globe-layout { grid-template-columns: 1fr; padding-top: 92px; }
+        }
       `}</style>
     </div>
   )

@@ -37,6 +37,8 @@ const MathsLab = React.lazy(() => import('./pages/student/MathsLab'))
 const ScienceLab = React.lazy(() => import('./pages/student/ScienceLab'))
 const ReadingLab = React.lazy(() => import('./pages/student/ReadingLab'))
 const MathsGames = React.lazy(() => import('./pages/student/MathsGames'))
+const GameHub = React.lazy(() => import('./pages/student/GameHub'))
+const StudyLab = React.lazy(() => import('./pages/student/StudyLab'))
 const SocialSciencesHub = React.lazy(() => import('./pages/student/SocialSciencesHub'))
 const EnglishLab = React.lazy(() => import('./pages/student/EnglishLab'))
 const EMSHub = React.lazy(() => import('./pages/student/EMSHub'))
@@ -45,6 +47,17 @@ const TechnologyLab = React.lazy(() => import('./pages/student/TechnologyLab'))
 const HistoryLab = React.lazy(() => import('./pages/student/HistoryLab'))
 const NaturalSciencesLab = React.lazy(() => import('./pages/student/NaturalSciencesLab'))
 const GamePlayer = React.lazy(() => import('./pages/student/GamePlayer'))
+const About = React.lazy(() => import('./pages/About'))
+
+function formatTitleFromPath(pathname) {
+  if (pathname === '/') return "Dashboard"
+  const clean = pathname.replace(/^\/+/, '').replace(/\/+/g, ' ').replace(/-/g, ' ')
+  return clean
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join(' ')
+}
 
 function AppShell() {
   const { sidebarCollapsed, mobileMenuOpen, setMobileMenuOpen } = useApp()
@@ -72,6 +85,16 @@ function AppShell() {
       <Sidebar />
       
       <div className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`} style={{ paddingBottom: 64 }}>
+        <div className="app-topbar">
+          <div className="app-topbar-left">
+            <div className="app-topbar-kicker">Teacher Platform</div>
+            <div className="app-topbar-title">{formatTitleFromPath(pathname)}</div>
+          </div>
+          <div className="app-topbar-right">
+            <span className="badge badge-primary">Professional Suite</span>
+            <span className="badge badge-success">Local First</span>
+          </div>
+        </div>
         <Suspense fallback={<div className="loading-overlay" style={{ height: '100vh' }}><div className="spinner"></div><div className="loading-text">Loading Module...</div></div>}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -91,6 +114,8 @@ function AppShell() {
             
             {/* Student Section */}
             <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/student-portal" element={<StudentPortal />} />
+            <Route path="/study-lab" element={<StudyLab />} />
             <Route path="/assignments" element={<Assignments />} />
             <Route path="/learning-path" element={<LearningPath />} />
             <Route path="/auto-organizer" element={<AutoOrganizer />} />
@@ -101,6 +126,7 @@ function AppShell() {
             <Route path="/science-lab" element={<ScienceLab />} />
             <Route path="/reading-lab" element={<ReadingLab />} />
             <Route path="/maths-games" element={<MathsGames />} />
+            <Route path="/games" element={<GameHub />} />
             <Route path="/social-sciences-hub" element={<SocialSciencesHub />} />
             <Route path="/english-lab" element={<EnglishLab />} />
             <Route path="/ems-hub" element={<EMSHub />} />
@@ -115,6 +141,7 @@ function AppShell() {
             <Route path="/todo" element={<Todo />} />
             <Route path="/parent-comm" element={<ParentComm />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </Suspense>
       </div>
