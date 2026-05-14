@@ -24,11 +24,6 @@
     --enemy: #f87171;
 }
 
-body, body * {
-    color: #000 !important;
-    text-shadow: none !important;
-}
-
 * {
     margin: 0;
     padding: 0;
@@ -63,7 +58,7 @@ h1 {
     background: linear-gradient(to right, var(--primary), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: #000;
+    -webkit-text-fill-color: transparent;
     letter-spacing: 4px;
     margin-bottom: 10px;
 }
