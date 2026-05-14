@@ -1,0 +1,51 @@
+import{j as e,M as j}from"./vendor-math-H17eJiYO.js";import{r as a}from"./vendor-react-DWCtWWkq.js";import{u as k,r as s,t as d,z as N,A as S}from"./index-mesJlUq9.js";import{m as u}from"./proxy-D2nBN0CA.js";import{A as z}from"./index-Zf317-0u.js";import{r as C}from"./index-BhaF8be4.js";import"./vendor-utils-idSrD3ku.js";import"./vendor-ai-DlT_pbP0.js";const x=[{level:1,title:"First Steps",icon:"🌱",color:"#a3e635",desc:"Alphabet, sounds, and simple words."},{level:2,title:"Word Builder",icon:"🏗️",color:"#38bdf8",desc:"Blending sounds and common sight words."},{level:3,title:"Story Explorers",icon:"📚",color:"#c084fc",desc:"Reading sentences and short paragraphs."},{level:4,title:"Fluent Readers",icon:"🚀",color:"#fb923c",desc:"Complex stories and reading comprehension."}];function G(){const c=k(),[t,b]=a.useState(1),[o,m]=a.useState(!1),[n,p]=a.useState(""),[g,f]=a.useState("phonics");a.useEffect(()=>()=>s(),[]);const y=r=>{s(),b(r);const i=x.find(l=>l.level===r);d(`Level ${r}: ${i.title}. ${i.desc}`)},h=async r=>{s(),m(!0),f(r),p("");try{d(`Generating ${r==="phonics"?"a phonics lesson":"a story"} for Level ${t}.`);let i="";if(r==="phonics")i=await N(t);else{const l=["Friendly Dragon","Magic Forest","Space Adventure","Under the Sea","Robot Friend"],w=l[Math.floor(Math.random()*l.length)];i=await S(w,t)}p(i),c(`${r==="phonics"?"Lesson":"Story"} is ready! 📖`,"success")}catch{c("Failed to load reading material","error")}finally{m(!1)}},v=()=>{if(!n)return;s();const r=n.replace(/[*#_]/g,"");d(r)};return e.jsxs("div",{className:"gl-stage-fullscreen animate-fade",children:[e.jsxs("div",{className:"stage-hdr",children:[e.jsxs("div",{style:{display:"flex",alignItems:"center",gap:12},children:[e.jsx("span",{style:{fontSize:"1.8rem"},children:"📖"}),e.jsxs("div",{children:[e.jsx("span",{className:"subject-tag-play",style:{color:"#38bdf8",borderColor:"#38bdf8",background:"rgba(56, 189, 248, 0.1)"},children:"Languages"}),e.jsx("h3",{style:{margin:0},children:"Reading & Phonics Lab"})]})]}),e.jsx("button",{className:"close-stage-btn",onClick:()=>{s(),window.history.back()},children:"✕"})]}),e.jsxs("div",{className:"game-container-full",style:{flexDirection:"column",padding:"2rem 4rem"},children:[e.jsx("div",{className:"reading-map-premium",children:x.map((r,i)=>e.jsxs(u.div,{className:`map-node-premium ${t===r.level?"active":""}`,whileHover:{y:-10,scale:1.05},whileTap:{scale:.95},initial:{opacity:0,y:20},animate:{opacity:1,y:0},transition:{delay:i*.1},onClick:()=>y(r.level),style:{"--node-color":r.color,borderColor:t===r.level?r.color:"rgba(255,255,255,0.05)",background:t===r.level?`linear-gradient(135deg, ${r.color}22, ${r.color}11)`:"rgba(30, 41, 59, 0.6)"},children:[e.jsx("div",{className:"node-icon",children:r.icon}),e.jsxs("div",{className:"node-level",children:["Level ",r.level]}),e.jsx("div",{className:"node-title",style:{color:t===r.level?r.color:"#fff"},children:r.title})]},r.level))}),e.jsxs("div",{className:"study-grid-premium",style:{width:"100%",maxWidth:"1400px",margin:"0 auto",flex:1},children:[e.jsx("div",{className:"study-panel-left",style:{width:"350px"},children:e.jsxs("div",{className:"premium-card-lg",style:{padding:"2.5rem",height:"100%"},children:[e.jsx("h3",{style:{color:"#38bdf8",fontSize:"1.8rem",marginBottom:"1rem"},children:"🎯 Activities"}),e.jsxs("p",{style:{opacity:.8,marginBottom:"2rem",lineHeight:1.5},children:["You are currently on ",e.jsxs("strong",{children:["Level ",t]}),". Choose an activity to practice your reading skills."]}),e.jsxs("div",{style:{display:"flex",flexDirection:"column",gap:"1.5rem"},children:[e.jsx("button",{className:"btn-premium-large",onClick:()=>h("phonics"),disabled:o,style:{background:"linear-gradient(135deg, #a3e635, #4ade80)",color:"#020617"},children:"🔤 Phonics Lesson"}),e.jsx("button",{className:"btn-premium-large",onClick:()=>h("story"),disabled:o,style:{background:"linear-gradient(135deg, #c084fc, #a855f7)",color:"#020617"},children:"📚 Read a Story"})]})]})}),e.jsxs("div",{className:"study-panel-right",children:[!n&&!o&&e.jsxs("div",{className:"empty-state-premium",children:[e.jsx("div",{style:{fontSize:"5rem",marginBottom:"1rem",opacity:.5},children:"🥚"}),e.jsx("h3",{style:{color:"#94a3b8",fontSize:"2rem"},children:"Ready to Hatch?"}),e.jsx("p",{style:{opacity:.5,fontSize:"1.2rem"},children:"Select an activity to start your reading adventure."})]}),o&&e.jsxs("div",{className:"empty-state-premium",children:[e.jsx("div",{className:"spinner-large",style:{borderColor:"rgba(56, 189, 248, 0.2)",borderTopColor:"#38bdf8",marginBottom:"2rem"}}),e.jsxs("h3",{style:{color:"#38bdf8",fontSize:"1.8rem"},children:["Generating ",g==="phonics"?"Lesson":"Story","..."]})]}),n&&!o&&e.jsx(z,{mode:"wait",children:e.jsxs(u.div,{initial:{opacity:0,scale:.95},animate:{opacity:1,scale:1},className:"result-card-premium",style:{borderColor:"#38bdf8",boxShadow:"0 0 50px rgba(56, 189, 248, 0.1)",height:"100%",overflowY:"auto"},children:[e.jsxs("div",{className:"result-header",children:[e.jsx("h3",{style:{color:"#38bdf8",margin:0,fontSize:"1.8rem"},children:g==="phonics"?"🔤 Phonics Practice":"📚 Story Time"}),e.jsx("div",{style:{display:"flex",gap:"10px"},children:e.jsx("button",{className:"pronounce-btn-inline",onClick:v,title:"Read Aloud",children:"🔊 Read Aloud"})})]}),e.jsx("div",{className:"markdown-content-premium reading-text",children:e.jsx(j,{remarkPlugins:[C],children:n})})]},"content")})]})]})]}),e.jsx("style",{children:`
+        .gl-stage-fullscreen { position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: #020617; z-index: 9999; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; color: white; font-family: 'Outfit', sans-serif; }
+        .stage-hdr { padding: 1.5rem 3.5rem; background: rgba(15, 23, 42, 0.9); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .close-stage-btn { background: #ef4444; width: 50px; height: 50px; border-radius: 18px; border: none; color: white; cursor: pointer; font-size: 1.5rem; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+        .close-stage-btn:hover { background: #dc2626; transform: scale(1.05); }
+        .subject-tag-play { padding: 0.4rem 1.2rem; border-radius: 1rem; font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border: 1px solid; display: inline-block; margin-bottom: 0.3rem; }
+
+        .reading-map-premium { display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem; width: 100%; max-width: 1200px; flex-wrap: wrap; }
+        .map-node-premium { min-width: 200px; padding: 2rem; text-align: center; border-radius: 2rem; cursor: pointer; border: 2px solid; backdrop-filter: blur(10px); }
+        .map-node-premium.active { box-shadow: 0 10px 30px var(--node-color); }
+        .node-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+        .node-level { font-weight: 900; opacity: 0.6; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .node-title { font-weight: 800; font-size: 1.4rem; }
+
+        .study-grid-premium { display: flex; gap: 2.5rem; }
+        .study-panel-left { flex-shrink: 0; }
+        .study-panel-right { flex: 1; min-width: 0; }
+
+        .premium-card-lg { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 2.5rem; box-shadow: 0 20px 40px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        .btn-premium-large { width: 100%; border: none; padding: 1.5rem; border-radius: 1.5rem; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-premium-large:hover:not(:disabled) { transform: translateY(-5px); filter: brightness(1.1); box-shadow: 0 15px 30px rgba(255,255,255,0.1); }
+        .btn-premium-large:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .empty-state-premium { height: 100%; border: 2px dashed rgba(255,255,255,0.1); border-radius: 2.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.3); min-height: 400px; }
+        .spinner-large { width: 80px; height: 80px; border: 8px solid; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-card-premium { background: rgba(15, 23, 42, 0.8); border: 2px solid; border-radius: 2.5rem; padding: 3rem; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; margin-bottom: 1.5rem; position: sticky; top: -3rem; background: rgba(15, 23, 42, 0.95); z-index: 10; padding-top: 1rem; }
+        
+        .pronounce-btn-inline { background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 2rem; padding: 0.8rem 1.5rem; display: inline-flex; align-items: center; gap: 0.8rem; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.2s; color: #38bdf8; }
+        .pronounce-btn-inline:hover { background: #38bdf8; color: #020617; transform: scale(1.05); }
+
+        .reading-text { font-size: 1.4rem !important; line-height: 2 !important; color: #f8fafc !important; }
+        .markdown-content-premium h1, .markdown-content-premium h2, .markdown-content-premium h3 { color: #38bdf8; margin-top: 2rem; margin-bottom: 1rem; }
+        .markdown-content-premium p { margin-bottom: 1.5rem; }
+
+        @media (max-width: 1024px) {
+          .study-grid-premium { flex-direction: column; }
+          .study-panel-left { width: 100% !important; }
+        }
+        @media (max-width: 768px) {
+          .stage-hdr { flex-direction: column; gap: 1.5rem; padding: 1.5rem; text-align: center; }
+          .close-stage-btn { position: absolute; top: 1rem; right: 1rem; width: 40px; height: 40px; font-size: 1.2rem; }
+          .reading-map-premium { flex-direction: column; align-items: center; }
+          .map-node-premium { width: 100%; max-width: 300px; }
+          .game-container-full { padding: 1rem; }
+          .result-card-premium { padding: 1.5rem; }
+          .reading-text { font-size: 1.2rem !important; }
+        }
+      `})]})}export{G as default};
